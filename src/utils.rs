@@ -8,3 +8,13 @@ pub fn set_panic_hook() {
     #[cfg(feature = "console_error_panic_hook")]
     console_error_panic_hook::set_once();
 }
+
+pub fn clamp_f32(val: f32, min: f32, max: f32) -> f32 {
+    if val > max {
+        max
+    } else if val < min {
+        min
+    } else {
+        val
+    }
+}
