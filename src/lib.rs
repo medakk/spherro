@@ -22,7 +22,7 @@ impl Universe {
     pub fn new() -> Universe {
         let mut particles = Vec::new();
 
-        for i in 1..100 {
+        for _ in 1..100 {
             let x: f32 = (js_sys::Math::random() as f32) * 700.0;
             let y: f32 = (js_sys::Math::random() as f32) * 700.0;
             particles.push(Vector3::new(x, y, 0.0));
@@ -33,8 +33,8 @@ impl Universe {
         }
     }
 
-    pub fn update(&mut self) {
-        let d = Vector3::new(0.0, 1.0, 0.0);
+    pub fn update(&mut self, dt: f32) {
+        let d = Vector3::new(0.0, 10.0, 0.0).scale(dt);
         let new_particles: Vec<_> = self.particles.iter().map(|v| {
             v.add(&d)
         }).collect();

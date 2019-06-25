@@ -1,7 +1,9 @@
 use wasm_bindgen::prelude::*;
 
+extern crate js_sys;
+
 //TODO:
-// * Operator overloading
+// Operator overloading
 
 #[wasm_bindgen]
 #[derive(Clone)]
@@ -19,5 +21,9 @@ impl Vector3 {
 
     pub fn add(&self, other: &Vector3) -> Vector3 {
         Vector3::new(self.x+other.x, self.y+other.y, self.z+other.z)
+    }
+
+    pub fn scale(&self, factor: f32) -> Vector3 {
+        Vector3::new(self.x * factor, self.y * factor, self.z * factor)
     }
 }
