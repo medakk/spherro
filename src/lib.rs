@@ -17,7 +17,7 @@ use cgmath::{MetricSpace};
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 const H: f32 = 30.0;
-const REST_RHO: f32 = 1.0 / (10.0 * 10.0 * 10.0);
+const REST_RHO: f32 = 1.0 / (2.0 * 2.0 * 2.0);
 
 #[repr(C)]
 pub struct Particle {
@@ -51,7 +51,7 @@ impl Universe {
             let y: f32 = (js_sys::Math::random() as f32) * height as f32;
 
             let position = Vector3f::new(x, y, 0.0);
-            particles.push(Particle::new(position, vec3f_zero(), 1.0, 1.0, 1.0));
+            particles.push(Particle::new(position, vec3f_zero(), 50.0, 1.0, 1.0));
         }
 
         Universe {
@@ -119,7 +119,7 @@ impl Universe {
             let p2 = &self.particles[i];
             let dist = p1.pos.distance(p2.pos);
 
-            if dist < H * 2.5 {
+            if dist < H * 2.0 {
                 neighbours.push(p2);
             }
         }
