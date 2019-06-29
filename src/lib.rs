@@ -1,16 +1,15 @@
 #[macro_use]
 mod utils;
 
-extern crate js_sys;
-extern crate cgmath;
 #[macro_use]
 extern crate itertools;
+extern crate cgmath;
+extern crate rand;
 
 use wasm_bindgen::prelude::*;
-
 use utils::*;
-
 use cgmath::{MetricSpace, ElementWise};
+use rand::Rng;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -24,7 +23,7 @@ const REST_RHO: f32 = 1.0 / (5.0 * 5.0 * 5.0);
 
 #[repr(C)]
 pub struct Particle {
-    pos: Vector3f,
+    pub pos: Vector3f,
     vel: Vector3f,
     mass: f32,
     rho: f32,
@@ -47,11 +46,12 @@ pub struct Universe {
 #[wasm_bindgen]
 impl Universe {
     pub fn new(width: usize, height: usize) -> Universe {
+        let mut rng = rand::thread_rng();
         let mut particles = Vec::new();
 
         for _ in 0..500 {
-            let x: f32 = (js_sys::Math::random() as f32) * width as f32;
-            let y: f32 = (js_sys::Math::random() as f32) * height as f32;
+            let x: f32 = rng.gen::<f32>() * width as f32;
+            let y: f32 = rng.gen::<f32>() * height as f32;
 
             let position = Vector3f::new(x, y, 0.0);
             particles.push(Particle::new(position, vec3f_zero(), 50.0, 1.0, 1.0));
@@ -107,6 +107,11 @@ impl Universe {
 
 #[allow(non_snake_case)]
 impl Universe {
+
+    pub fn get_particles(&self) -> &Vec<Particle> {
+        &self.particles
+    }
+
     fn get_neighbours(&self, pi: usize) -> Vec<&Particle>{
         let mut neighbours: Vec<&Particle> = Vec::new();
 
