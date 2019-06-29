@@ -3,12 +3,14 @@ mod utils;
 
 extern crate js_sys;
 extern crate cgmath;
+#[macro_use]
+extern crate itertools;
 
 use wasm_bindgen::prelude::*;
 
 use utils::*;
 
-use cgmath::{MetricSpace};
+use cgmath::{MetricSpace, ElementWise};
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -17,7 +19,8 @@ use cgmath::{MetricSpace};
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 const H: f32 = 30.0;
-const REST_RHO: f32 = 1.0 / (2.0 * 2.0 * 2.0);
+const VISC: f32 = 50.0;
+const REST_RHO: f32 = 1.0 / (5.0 * 5.0 * 5.0);
 
 #[repr(C)]
 pub struct Particle {
@@ -67,10 +70,7 @@ impl Universe {
         let new_particles: Vec<_> = self.particles.iter().enumerate().map(|(pi, p)| {
             // Compute Navier stokes
             let neighbours = self.get_neighbours(pi);
-            let mut dv = self.compute_dv(p, neighbours);
-
-            // Gravity
-            dv.y += 100.0;
+            let dv = self.compute_dv(p, neighbours);
 
             // Find velocity
             let mut vel = p.vel + dv * dt;
@@ -80,10 +80,10 @@ impl Universe {
 
             // Bounce off walls
             if pos.x < 0.0 || pos.x > self.width as f32 {
-                vel.x *= -0.90;
+                vel.x *= -0.20;
             }
             if pos.y < 0.0 || pos.y > self.height as f32 {
-                vel.y *= -0.90;
+                vel.y *= -0.20;
             }
 
             Particle::new(pos, vel, p.mass, p.rho, p.pressure)
@@ -158,32 +158,40 @@ impl Universe {
     }
 
     fn compute_dv(&self, pi: &Particle, neighbours: Vec<&Particle>) -> Vector3f {
-        // General: Compute x_ijs
+        // Compute x_ijs
         let x_ijs: Vec<f32> = neighbours.iter().map(|p_j| {
             pi.pos.distance(p_j.pos)
         }).collect();
 
-        let dWs: Vec<Vector3f> = neighbours.iter().zip(x_ijs).map(|(pj, x_ij)| {
+        // Compute gradient of W
+        let dWs: Vec<Vector3f> = izip!(&neighbours, &x_ijs).map(|(pj, x_ij)| {
             let q = x_ij / H;
             let (_f, df) = cubic_spline(q);
 
             // Derivative of q wrt x, y and z
-            let dq_x = (pi.pos.x - pj.pos.x) / (H * q);
-            let dq_y = (pi.pos.y - pj.pos.y) / (H * q);
-            let dq_z = (pi.pos.z - pj.pos.z) / (H * q);
-            
-            let dW_x = (1.0 / H.powf(3.0)) * df * dq_x;
-            let dW_y = (1.0 / H.powf(3.0)) * df * dq_y;
-            let dW_z = (1.0 / H.powf(3.0)) * df * dq_z;
+            let dq = (pi.pos - pj.pos) / (H * q);
+            let dW = (1.0 / H.powf(3.0)) * df * dq;
 
-            Vector3f::new(dW_x, dW_y, dW_z)
+            dW
         }).collect();
 
-        let dP: Vector3f = neighbours.iter().zip(dWs).map(|(pj, dW)| {
-            (pj.mass / pj.rho) * pj.pressure * dW
-        }).sum();
 
-        let dv = (-1.0 / pi.rho) * dP;
+        // Compute gradient of pressure
+        let dP: Vector3f = pi.rho * izip!(&neighbours, &dWs).map(|(pj, dW)| {
+            pj.mass * (pi.pressure / pi.rho.powf(2.0) + pj.pressure / pj.rho.powf(2.0)) * dW
+        }).sum::<Vector3f>();
+
+        // Compute lapacian of velocities
+        let ddv = 2.0 * izip!(&neighbours, &x_ijs, &dWs).map(|(pj, x_ij, dW)| {
+            let q1 = (pj.mass / pj.rho) * pj.vel;
+            let q2 = (*x_ij * dW) / (x_ij*x_ij + 0.01*H*H);
+            q1.mul_element_wise(q2)
+        }).sum::<Vector3f>();
+
+        // Accceleration due to gravity
+        let gravity = Vector3f::new(0.0, 10.0, 0.0);
+
+        let dv = (-1.0 / pi.rho) * dP + VISC * ddv + gravity;
 
         dv
     }
