@@ -24,6 +24,7 @@ const REST_RHO: f32 = 1.0 / (5.0 * 5.0 * 5.0);
 #[repr(C)]
 pub struct Particle {
     pub pos: Vector3f,
+    pub col: Vector3f,
     vel: Vector3f,
     mass: f32,
     rho: f32,
@@ -31,8 +32,8 @@ pub struct Particle {
 }
 
 impl Particle {
-    pub fn new(pos: Vector3f, vel: Vector3f, mass: f32, rho: f32, pressure: f32) -> Particle {
-        Particle{pos, vel, mass, rho, pressure}
+    pub fn new(pos: Vector3f, col: Vector3f, vel: Vector3f, mass: f32, rho: f32, pressure: f32) -> Particle {
+        Particle{pos, col, vel, mass, rho, pressure}
     }
 }
 
@@ -54,7 +55,8 @@ impl Universe {
             let y: f32 = rng.gen::<f32>() * height as f32;
 
             let position = Vector3f::new(x, y, 0.0);
-            particles.push(Particle::new(position, vec3f_zero(), 50.0, 1.0, 1.0));
+            let col = Vector3f::new(0.0, 0.0, 1.0);
+            particles.push(Particle::new(position, col, vec3f_zero(), 50.0, 1.0, 1.0));
         }
 
         Universe {
@@ -80,16 +82,24 @@ impl Universe {
 
             // Bounce off walls
             if pos.x < 0.0 || pos.x > self.width as f32 {
-                vel.x *= -0.20;
+                vel.x *= -0.60;
             }
             if pos.y < 0.0 || pos.y > self.height as f32 {
-                vel.y *= -0.20;
+                vel.y *= -0.60;
             }
 
-            Particle::new(pos, vel, p.mass, p.rho, p.pressure)
+            Particle::new(pos, p.col, vel, p.mass, p.rho, p.pressure)
         }).collect();
 
         self.particles = new_particles;
+    }
+
+    pub fn debug_update(&mut self, dt: f32) {
+        let neighbours = self.get_neighbour_indices(0);
+        self.particles[0].col = vec3f_zero();
+        for j in neighbours.into_iter() {
+            self.particles[j].col = Vector3f::new(1.0, 1.0, 0.0);
+        }
     }
 
     pub fn get_data_stride(&self) -> usize {
@@ -112,20 +122,27 @@ impl Universe {
         &self.particles
     }
 
-    fn get_neighbours(&self, pi: usize) -> Vec<&Particle>{
-        let mut neighbours: Vec<&Particle> = Vec::new();
+    fn get_neighbours(&self, i: usize) -> Vec<&Particle>{
+        self.get_neighbour_indices(i).into_iter().map(|j| {
+            &self.particles[j]
+        }).collect()
+    }
 
-        let p1 = &self.particles[pi];
-        for i in 0..self.get_size() {
-            if i==pi {
+    fn get_neighbour_indices(&self, i: usize) -> Vec<usize> {
+        //TODO: figure out iterators and return that instead
+        let mut neighbours: Vec<usize> = Vec::new();
+
+        let p1 = &self.particles[i];
+        for j in 0..self.get_size() {
+            if j==i {
                 continue;
             }
 
-            let p2 = &self.particles[i];
+            let p2 = &self.particles[j];
             let dist = p1.pos.distance(p2.pos);
 
             if dist < H * 2.0 {
-                neighbours.push(p2);
+                neighbours.push(j);
             }
         }
 
@@ -155,7 +172,7 @@ impl Universe {
             let pressure = 1.0 * ((rho / REST_RHO).powf(7.0) - 1.0);
 
             new_particles.push(Particle::new(
-                pi.pos, pi.vel, pi.mass, rho, pressure
+                pi.pos, pi.col, pi.vel, pi.mass, rho, pressure
             ));
         }
 
@@ -188,13 +205,13 @@ impl Universe {
 
         // Compute lapacian of velocities
         let ddv = 2.0 * izip!(&neighbours, &x_ijs, &dWs).map(|(pj, x_ij, dW)| {
-            let q1 = (pj.mass / pj.rho) * pj.vel;
+            let q1 = (pj.mass / pj.rho) * (pi.vel - pj.vel);
             let q2 = (*x_ij * dW) / (x_ij*x_ij + 0.01*H*H);
             q1.mul_element_wise(q2)
         }).sum::<Vector3f>();
 
         // Accceleration due to gravity
-        let gravity = Vector3f::new(0.0, 10.0, 0.0);
+        let gravity = Vector3f::new(0.0, -20.0, 0.0);
 
         let dv = (-1.0 / pi.rho) * dP + VISC * ddv + gravity;
 
