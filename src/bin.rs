@@ -17,7 +17,7 @@ fn main() {
     let mut window = Window::new("spherro");
     window.set_background_color(0.85, 0.85, 0.85);
 
-    let eye = na::Point3::new(300.0, 300.0, 1000.0) * VIZ_SCALE;
+    let eye = na::Point3::new(300.0, 300.0, 800.0) * VIZ_SCALE;
     let look_at = na::Point3::new(300.0, 300.0, 0.0) * VIZ_SCALE;
     let mut first_person = kiss3d::camera::FirstPerson::new(eye, look_at);
 
@@ -81,8 +81,9 @@ fn main() {
                 _ => {}
             }
         }
-        // universe.debug_update(dt);
-        for _ in 0..30 {
+        universe.clear_colors();
+        universe.debug_update(dt);
+        for _ in 0..10 {
             universe.update(0.001);
         }
 

@@ -19,7 +19,7 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 const H: f32 = 30.0;
 const VISC: f32 = 50.0;
-const REST_RHO: f32 = 1.0 / (5.0 * 5.0 * 5.0);
+const REST_RHO: f32 = 1.0 / (0.1 * 0.1 * 0.1);
 
 #[repr(C)]
 pub struct Particle {
@@ -44,6 +44,24 @@ pub struct Universe {
     height: usize,
 }
 
+impl Universe {
+    // All debug functions
+
+    pub fn debug_update(&mut self, dt: f32) {
+        let neighbours = self.get_neighbour_indices(0);
+        self.particles[0].col = vec3f_zero();
+        for j in neighbours.into_iter() {
+            self.particles[j].col = Vector3f::new(1.0, 1.0, 0.0);
+        }
+    }
+
+    pub fn clear_colors(&mut self) {
+        for pi in self.particles.iter_mut() {
+            pi.col = Vector3f::new(0.0, 0.0, 1.0);
+        }
+    }
+}
+
 #[wasm_bindgen]
 impl Universe {
     pub fn new(width: usize, height: usize) -> Universe {
@@ -56,7 +74,7 @@ impl Universe {
 
             let position = Vector3f::new(x, y, 0.0);
             let col = Vector3f::new(0.0, 0.0, 1.0);
-            particles.push(Particle::new(position, col, vec3f_zero(), 50.0, 1.0, 1.0));
+            particles.push(Particle::new(position, col, vec3f_zero(), 25.0, 1.0, 1.0));
         }
 
         Universe {
@@ -92,14 +110,6 @@ impl Universe {
         }).collect();
 
         self.particles = new_particles;
-    }
-
-    pub fn debug_update(&mut self, dt: f32) {
-        let neighbours = self.get_neighbour_indices(0);
-        self.particles[0].col = vec3f_zero();
-        for j in neighbours.into_iter() {
-            self.particles[j].col = Vector3f::new(1.0, 1.0, 0.0);
-        }
     }
 
     pub fn get_data_stride(&self) -> usize {
@@ -181,8 +191,8 @@ impl Universe {
 
     fn compute_dv(&self, pi: &Particle, neighbours: Vec<&Particle>) -> Vector3f {
         // Compute x_ijs
-        let x_ijs: Vec<f32> = neighbours.iter().map(|p_j| {
-            pi.pos.distance(p_j.pos)
+        let x_ijs: Vec<f32> = neighbours.iter().map(|pj| {
+            pi.pos.distance(pj.pos)
         }).collect();
 
         // Compute gradient of W
@@ -203,7 +213,7 @@ impl Universe {
             pj.mass * (pi.pressure / pi.rho.powf(2.0) + pj.pressure / pj.rho.powf(2.0)) * dW
         }).sum::<Vector3f>();
 
-        // Compute lapacian of velocities
+        // Compute laplacian of velocities
         let ddv = 2.0 * izip!(&neighbours, &x_ijs, &dWs).map(|(pj, x_ij, dW)| {
             let q1 = (pj.mass / pj.rho) * (pi.vel - pj.vel);
             let q2 = (*x_ij * dW) / (x_ij*x_ij + 0.01*H*H);
@@ -211,7 +221,7 @@ impl Universe {
         }).sum::<Vector3f>();
 
         // Accceleration due to gravity
-        let gravity = Vector3f::new(0.0, -20.0, 0.0);
+        let gravity = Vector3f::new(0.0, -30.0, 0.0);
 
         let dv = (-1.0 / pi.rho) * dP + VISC * ddv + gravity;
 
