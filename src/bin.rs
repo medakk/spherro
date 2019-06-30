@@ -5,10 +5,11 @@ extern crate spherro;
 #[macro_use]
 extern crate itertools;
 
-use na::{Point3};
+use na::{Point2, Point3};
 use kiss3d::window::Window;
 use kiss3d::event::{WindowEvent, Key, Action};
 use kiss3d::light::Light;
+use kiss3d::text::{Font};
 use spherro::{Universe};
 
 const VIZ_SCALE: f32 = 0.001;
@@ -50,6 +51,7 @@ fn main() {
     }
 
     window.set_light(Light::StickToCamera);
+    let font = Font::default();
 
     let mut last_time = std::time::Instant::now();
     while !window.should_close() {
@@ -84,12 +86,12 @@ fn main() {
 
         universe.clear_colors();
         // universe.debug_update(dt);
-        for _ in 0..10 {
+        for _ in 0..1 {
             universe.update(0.001);
         }
 
-        // Debug octree
         /*
+        // Debug octree
         let lines = universe.debug_splits();
         for (p1, p2) in lines.iter() {
             let p1 = na::Point3::new(p1.x, p1.y, p1.z) * VIZ_SCALE;
@@ -115,6 +117,9 @@ fn main() {
             &Point3::new(0.0, 0.0, 1.0),
         );
 
+        // Draw FPS
+        let fps_s = format!("FPS: {}", (1.0 / dt));
+        window.draw_text(&fps_s, &Point2::new(50.0, 50.0), 40.0, &font, &Point3::new(1.0, 0.0, 0.0));
 
     }
 }

@@ -186,7 +186,7 @@ impl Universe {
         }).sum::<Vector3f>();
 
         // Accceleration due to gravity
-        let gravity = Vector3f::new(0.0, -30.0, 0.0);
+        let gravity = Vector3f::new(0.0, -1000.0, 0.0);
 
         let dv = (-1.0 / pi.rho) * dP + VISC * ddv + gravity;
 

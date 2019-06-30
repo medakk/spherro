@@ -1,10 +1,11 @@
 use crate::util::{Vector3f};
-use cgmath::{MetricSpace};
+use cgmath::{MetricSpace, InnerSpace};
 
 //TODO: Implement the OCTREE! :p
 // this is currently a quadtree
 
 const MIN_POINTS: usize = 5;
+const MAX_DEPTH: usize = 16;
 
 pub trait HasPosition {
     fn position(&self) -> Vector3f;
@@ -23,6 +24,50 @@ pub struct Octree<'a, T> {
     items: &'a [T],
 }
 
+fn point_line_dist(p: Vector3f, line: &(Vector3f, Vector3f)) -> Option<f32> {
+    let line_vec = (line.1 - line.0).normalize();
+    let lambda = line_vec.dot(p - line.0);
+
+    let poi = lambda * line_vec + line.0;
+
+    let intersect_length = (poi - p).magnitude();
+
+    Some(intersect_length)
+}
+
+fn circle_rect_collide(circle: (Vector3f, f32), rect: &(Vector3f, Vector3f)) -> bool {
+    let circle_in_rect = circle.0.x > rect.0.x &&
+                         circle.0.x < rect.1.x &&
+                         circle.0.y > rect.0.y &&
+                         circle.0.y < rect.1.y;
+    if circle_in_rect {
+        return true;
+    }
+
+    let r = circle.1;
+    let l1 = (
+        rect.0,
+        Vector3f::new(rect.1.x, rect.0.y, 0.0),
+    );
+    let l2 = (
+        Vector3f::new(rect.1.x, rect.0.y, 0.0),
+        rect.1,
+    );
+    let l3 = (
+        Vector3f::new(rect.0.x, rect.1.y, 0.0),
+        rect.1,
+    );
+    let l4 = (
+        rect.0,
+        Vector3f::new(rect.0.x, rect.1.y, 0.0),
+    );
+
+    point_line_dist(circle.0, &l1).unwrap_or(1e+19) < r ||
+    point_line_dist(circle.0, &l2).unwrap_or(1e+19) < r ||
+    point_line_dist(circle.0, &l3).unwrap_or(1e+19) < r ||
+    point_line_dist(circle.0, &l4).unwrap_or(1e+19) < r
+}
+
 impl<'a, T> Octree<'a, T> where T: HasPosition + Clone {
     pub fn new(width: f32, height: f32, items: &'a [T]) -> Self {
         let tl = Vector3f::new(0.0, 0.0, 0.0);
@@ -33,7 +78,7 @@ impl<'a, T> Octree<'a, T> where T: HasPosition + Clone {
             indices.push(i);
         }
 
-        let root = Octree::<T>::construct_tree(tl, br, items, &indices);
+        let root = Octree::<T>::construct_tree(tl, br, items, &indices, 0);
         Octree{
             root: root,
             width: width,
@@ -53,7 +98,7 @@ impl<'a, T> Octree<'a, T> where T: HasPosition + Clone {
         let pos = self.items[i].position();
         let mut v: Vec<usize> = Vec::new();
 
-        if node.items.len() < MIN_POINTS {
+        if node.children.len() == 0 {
             for j in node.items.iter() {
                 if i == *j {
                     continue;
@@ -65,18 +110,36 @@ impl<'a, T> Octree<'a, T> where T: HasPosition + Clone {
                     v.push(*j);
                 }
             }
+
+            return v;
         }
 
+        /*
+        // Uncomment for brute force
         for child in node.children.iter() {
-            //WRONG
             v.extend(self.tree_search(&child, i, r, tl, br));
+        }
+        return v;
+        */
+
+        let mid = (tl + br) / 2.0;
+
+        let rect0 = (tl, mid);
+        let rect1 = (Vector3f::new(mid.x, tl.y, 0.0), Vector3f::new(br.x, mid.y, 0.0));
+        let rect2 = (mid, br);
+        let rect3 = (Vector3f::new(tl.x, mid.y, 0.0), Vector3f::new(mid.x, br.y, 0.0));
+
+        for (child, rect) in izip!(node.children.iter(), [rect0, rect1, rect2, rect3].iter()) {
+            if circle_rect_collide((pos, r), rect) {
+                v.extend(self.tree_search(&child, i, r, rect.0, rect.1));
+            }
         }
 
         v
     }
 
-    fn construct_tree(tl: Vector3f, br: Vector3f, items: &'a [T], indices: &[usize]) -> Node {
-        if indices.len() < MIN_POINTS {
+    fn construct_tree(tl: Vector3f, br: Vector3f, items: &'a [T], indices: &[usize], depth: usize) -> Node {
+        if indices.len() < MIN_POINTS || depth == MAX_DEPTH {
             return Node{
                 items: indices.to_vec(),
                 children: Vec::new(),
@@ -108,16 +171,16 @@ impl<'a, T> Octree<'a, T> where T: HasPosition + Clone {
         let mut children: Vec<Node> = Vec::new();
 
         children.push(Octree::<T>::construct_tree(
-            tl, mid, items, &nw
+            tl, mid, items, &nw, depth+1
         ));
         children.push(Octree::<T>::construct_tree(
-            Vector3f::new(mid.x, tl.y, 0.0), Vector3f::new(br.x, mid.y, 0.0), items, &ne
+            Vector3f::new(mid.x, tl.y, 0.0), Vector3f::new(br.x, mid.y, 0.0), items, &ne, depth+1
         ));
         children.push(Octree::<T>::construct_tree(
-            mid, br, items, &se
+            mid, br, items, &se, depth+1
         ));
         children.push(Octree::<T>::construct_tree(
-            Vector3f::new(tl.x, mid.y, 0.0), Vector3f::new(mid.x, br.y, 0.0), items, &sw
+            Vector3f::new(tl.x, mid.y, 0.0), Vector3f::new(mid.x, br.y, 0.0), items, &sw, depth+1
         ));
 
 
