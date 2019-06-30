@@ -5,7 +5,7 @@ extern crate spherro;
 #[macro_use]
 extern crate itertools;
 
-use na::{Vector3, UnitQuaternion, Translation3, Point3};
+use na::{Point3};
 use kiss3d::window::Window;
 use kiss3d::event::{WindowEvent, Key, Action};
 use kiss3d::light::Light;
@@ -21,10 +21,10 @@ fn main() {
     let look_at = na::Point3::new(300.0, 300.0, 0.0) * VIZ_SCALE;
     let mut first_person = kiss3d::camera::FirstPerson::new(eye, look_at);
 
-    let mut universe = Universe::new(600, 600);
+    let mut universe = Universe::new(600.0, 600.0);
     let mut viz_objs: Vec<kiss3d::scene::SceneNode> = Vec::new();
 
-    for i in 0..universe.get_size() {
+    for _i in 0..universe.get_size() {
         let r = 10.0 * VIZ_SCALE;
         let mut obj = window.add_sphere(r);
         obj.set_color(0.0, 0.0, 0.0);
@@ -45,8 +45,8 @@ fn main() {
                                     0.0, 0.0, i as f32 * std::f32::consts::PI / 2.0);
         let ro = na::Translation3::new(300.0*VIZ_SCALE, 300.0*VIZ_SCALE, 0.0); // rotation origin
         let ro_inv = na::Translation3::new(-300.0*VIZ_SCALE, -300.0*VIZ_SCALE, 0.0); // rotation origin
-        let T = ro* r * ro_inv * t;
-        c.set_local_transformation(T);
+        let transform = ro * r * ro_inv * t;
+        c.set_local_transformation(transform);
     }
 
     window.set_light(Light::StickToCamera);
@@ -76,19 +76,29 @@ fn main() {
 
                 },
                 WindowEvent::Key(Key::R, Action::Press, _) => {
-                    universe = Universe::new(600, 600);
+                    universe = Universe::new(600.0, 600.0);
                 },
                 _ => {}
             }
         }
+
         universe.clear_colors();
-        universe.debug_update(dt);
+        // universe.debug_update(dt);
         for _ in 0..10 {
             universe.update(0.001);
         }
 
-        // Draw axes
+        // Debug octree
+        /*
+        let lines = universe.debug_splits();
+        for (p1, p2) in lines.iter() {
+            let p1 = na::Point3::new(p1.x, p1.y, p1.z) * VIZ_SCALE;
+            let p2 = na::Point3::new(p2.x, p2.y, p2.z) * VIZ_SCALE;
+            window.draw_line(&p1, &p2, &Point3::new(0.0, 0.0, 0.0));
+        }
+        */
 
+        // Draw axes
         window.draw_line(
             &Point3::origin(),
             &Point3::new(1.0, 0.0, 0.0),

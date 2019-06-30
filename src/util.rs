@@ -8,16 +8,6 @@ pub fn vec3f_zero() -> Vector3f {
     Vector3f::new(0.0, 0.0, 0.0)
 }
 
-pub fn clamp_f32(val: f32, min: f32, max: f32) -> f32 {
-    if val > max {
-        max
-    } else if val < min {
-        min
-    } else {
-        val
-    }
-}
-
 // A macro to provide `println!(..)`-style syntax for `console.log` logging.
 macro_rules! log {
     ( $( $t:tt )* ) => {
