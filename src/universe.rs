@@ -57,7 +57,7 @@ impl Universe {
 
                 for i in 0..cols as usize {
                     for j in 0..rows as usize {
-                        let x = (x_spacing * (i + (j % 2))) as f32;
+                        let x = (x_spacing * (i + (j % 2)*3)) as f32;
                         let y = (y_spacing * j) as f32;
 
                         let position = Vector3f::new(x, y, 0.0);
@@ -85,8 +85,11 @@ impl Universe {
         // try different implementations
         let accel = Octree::new(self.width, self.height, &orig_particles);
 
+        //TODO: Compute neighbours once, and just pass that into the update methods
+
         self.particles = self.updated_particle_fields(&accel);
 
+        //TODO: refactor this into a function
         let new_particles: Vec<_> = self.particles.iter().enumerate().map(|(pi, p)| {
             // Compute Navier stokes
             let neighbours = self.get_neighbours(pi, &accel);
@@ -222,6 +225,8 @@ impl Universe {
     }
 }
 
+//TODO: move this elsewhere, make a different function for the gradient
+// and maybe more generic to allow plugging in different functions here
 // Returns the value and gradient of the value
 fn cubic_spline(q: f32) -> (f32, f32) {
     if 0.0 <= q && q < 1.0 {
