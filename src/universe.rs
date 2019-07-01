@@ -1,13 +1,15 @@
 use wasm_bindgen::prelude::*;
 use cgmath::{InnerSpace};
 use rand::Rng;
-use crate::util::{Vector3f, vec3f_zero};
+use crate::util::*;
 use crate::particle::{Particle};
 use crate::octree::{Octree};
 
 const H: f32 = 30.0;
-const VISC: f32 = 50.0;
+const VISC: f32 = 10.0;
 const REST_RHO: f32 = 1.0 / (5.0 * 5.0 * 5.0);
+const BOUNCE_MIN_DV: f32 = 1000.0;
+const GRAVITY: f32 = -10000.0;
 const K: f32 = 100.0;
 
 #[wasm_bindgen]
@@ -53,7 +55,7 @@ impl Universe {
 
             let position = Vector3f::new(x, y, 0.0);
             let col = Vector3f::new(0.0, 0.0, 1.0);
-            particles.push(Particle::new(position, col, vec3f_zero(), 25.0, 1.0, 1.0));
+            particles.push(Particle::new(position, col, vec3f_zero(), 100.0, 1.0, 1.0));
         }
 
         Universe {
@@ -79,12 +81,16 @@ impl Universe {
             // Find position
             let pos = p.pos + vel * dt;
 
+            const B: f32 = 0.9;
             // Bounce off walls
-            if pos.x < 0.0 || pos.x > self.width as f32 {
-                vel.x *= -0.90;
-            }
-            if pos.y < 0.0 || pos.y > self.height as f32 {
-                vel.y *= -0.90;
+            if pos.x < 0.0 {
+                vel.x = max_f32(-B*vel.x, BOUNCE_MIN_DV);
+            } else if pos.x > self.width {
+                vel.x = min_f32(-B*vel.x, -BOUNCE_MIN_DV);
+            } else if pos.y < 0.0 {
+                vel.y = max_f32(-B*vel.y, BOUNCE_MIN_DV);
+            } else if pos.y > self.height {
+                vel.y = min_f32(-B*vel.y, -BOUNCE_MIN_DV);
             }
 
             Particle::new(pos, p.col, vel, p.mass, p.rho, p.pressure)
@@ -186,7 +192,7 @@ impl Universe {
         }).sum::<Vector3f>();
 
         // Accceleration due to gravity
-        let gravity = Vector3f::new(0.0, -10000.0, 0.0);
+        let gravity = Vector3f::new(0.0, GRAVITY, 0.0);
 
         let dv = (-1.0 / pi.rho) * dP + VISC * ddv + gravity;
 

@@ -90,15 +90,15 @@ fn main() {
             universe.update(0.001);
         }
 
-        /*
         // Debug octree
-        let lines = universe.debug_splits();
-        for (p1, p2) in lines.iter() {
-            let p1 = na::Point3::new(p1.x, p1.y, p1.z) * VIZ_SCALE;
-            let p2 = na::Point3::new(p2.x, p2.y, p2.z) * VIZ_SCALE;
-            window.draw_line(&p1, &p2, &Point3::new(0.0, 0.0, 0.0));
+        if false {
+            let lines = universe.debug_splits();
+            for (p1, p2) in lines.iter() {
+                let p1 = na::Point3::new(p1.x, p1.y, p1.z) * VIZ_SCALE;
+                let p2 = na::Point3::new(p2.x, p2.y, p2.z) * VIZ_SCALE;
+                window.draw_line(&p1, &p2, &Point3::new(0.0, 0.0, 0.0));
+            }
         }
-        */
 
         // Draw axes
         window.draw_line(
