@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-use cgmath::{MetricSpace, ElementWise};
+use cgmath::{InnerSpace};
 use rand::Rng;
 use crate::util::{Vector3f, vec3f_zero};
 use crate::particle::{Particle};
@@ -7,7 +7,8 @@ use crate::octree::{Octree};
 
 const H: f32 = 30.0;
 const VISC: f32 = 50.0;
-const REST_RHO: f32 = 1.0 / (0.1 * 0.1 * 0.1);
+const REST_RHO: f32 = 1.0 / (5.0 * 5.0 * 5.0);
+const K: f32 = 100.0;
 
 #[wasm_bindgen]
 pub struct Universe {
@@ -80,12 +81,11 @@ impl Universe {
 
             // Bounce off walls
             if pos.x < 0.0 || pos.x > self.width as f32 {
-                vel.x *= -0.60;
+                vel.x *= -0.90;
             }
             if pos.y < 0.0 || pos.y > self.height as f32 {
-                vel.y *= -0.60;
+                vel.y *= -0.90;
             }
-            // print!("dv: {} {} {}\n", dv.x, dv.y, dv.z);
 
             Particle::new(pos, p.col, vel, p.mass, p.rho, p.pressure)
         }).collect();
@@ -130,12 +130,12 @@ impl Universe {
         for (i, pi) in self.particles.iter().enumerate() {
             let neighbours = self.get_neighbours(i, accel);
 
-            let x_ijs: Vec<f32> = neighbours.iter().map(|pj| {
-                pi.pos.distance(pj.pos)
+            let x_ijs: Vec<Vector3f> = neighbours.iter().map(|pj| {
+                pi.pos - pj.pos
             }).collect();
 
             let W: Vec<f32> = x_ijs.iter().map(|x_ij| {
-                let q = x_ij / H;
+                let q = x_ij.magnitude() / H;
                 cubic_spline(q).0 / H.powf(3.0)
             }).collect();
 
@@ -144,7 +144,7 @@ impl Universe {
                 rho += pj.mass * W[j]
             }
 
-            let pressure = 1.0 * ((rho / REST_RHO).powf(7.0) - 1.0);
+            let pressure = K * ((rho / REST_RHO).powf(7.0) - 1.0);
 
             new_particles.push(Particle::new(
                 pi.pos, pi.col, pi.vel, pi.mass, rho, pressure
@@ -156,13 +156,13 @@ impl Universe {
 
     fn compute_dv(&self, pi: &Particle, neighbours: Vec<&Particle>) -> Vector3f {
         // Compute x_ijs
-        let x_ijs: Vec<f32> = neighbours.iter().map(|pj| {
-            pi.pos.distance(pj.pos)
+        let x_ijs: Vec<Vector3f> = neighbours.iter().map(|pj| {
+            pi.pos - pj.pos
         }).collect();
 
         // Compute gradient of W
         let dWs: Vec<Vector3f> = izip!(&neighbours, &x_ijs).map(|(pj, x_ij)| {
-            let q = x_ij / H;
+            let q = x_ij.magnitude() / H;
             let (_f, df) = cubic_spline(q);
 
             // Derivative of q wrt x, y and z
@@ -181,12 +181,12 @@ impl Universe {
         // Compute laplacian of velocities
         let ddv = 2.0 * izip!(&neighbours, &x_ijs, &dWs).map(|(pj, x_ij, dW)| {
             let q1 = (pj.mass / pj.rho) * (pi.vel - pj.vel);
-            let q2 = (*x_ij * dW) / (x_ij*x_ij + 0.01*H*H);
-            q1.mul_element_wise(q2)
+            let q2 = (x_ij.dot(*dW)) / (x_ij.dot(*x_ij) + 0.01*H*H);
+            q1 * q2
         }).sum::<Vector3f>();
 
         // Accceleration due to gravity
-        let gravity = Vector3f::new(0.0, -1000.0, 0.0);
+        let gravity = Vector3f::new(0.0, -10000.0, 0.0);
 
         let dv = (-1.0 / pi.rho) * dP + VISC * ddv + gravity;
 
