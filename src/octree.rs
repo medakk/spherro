@@ -63,10 +63,17 @@ fn circle_rect_collide(circle: (Vector3f, f32), rect: &(Vector3f, Vector3f)) -> 
         Vector3f::new(rect.0.x, rect.1.y, 0.0),
     );
 
-    point_line_dist(circle.0, &l1).unwrap_or(1e+19) < r ||
-    point_line_dist(circle.0, &l2).unwrap_or(1e+19) < r ||
-    point_line_dist(circle.0, &l3).unwrap_or(1e+19) < r ||
-    point_line_dist(circle.0, &l4).unwrap_or(1e+19) < r
+    let check = |l| {
+        match point_line_dist(circle.0, l) {
+            Some(v) => { v < r },
+            _       => { false },
+        }
+    };
+
+    check(&l1) ||
+    check(&l2) ||
+    check(&l3) ||
+    check(&l4)
 }
 
 impl<'a, T> Octree<'a, T> where T: HasPosition + Clone {
