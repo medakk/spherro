@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-use cgmath::{InnerSpace};
+use cgmath::{InnerSpace, VectorSpace};
 use rand::Rng;
 use crate::util::*;
 use crate::particle::{Particle};
@@ -66,8 +66,13 @@ impl Universe {
     }
 
     pub fn update(&mut self, dt: f32) {
+        //TODO: This function creates a lot of copies of particles
         let orig_particles = self.particles.clone();
+
+        //TODO: Abstract out the accelerator. This will make it easier to
+        // try different implementations
         let accel = Octree::new(self.width, self.height, &orig_particles);
+
         self.particles = self.updated_particle_fields(&accel);
 
         let new_particles: Vec<_> = self.particles.iter().enumerate().map(|(pi, p)| {
@@ -133,6 +138,9 @@ impl Universe {
     fn updated_particle_fields(&self, accel: &Octree<Particle>) -> Vec<Particle> {
         let mut new_particles: Vec<Particle> = Vec::new();
 
+        const COL_BLUE: Vector3f = Vector3f::new(0.0, 0.0, 1.0);
+        const COL_RED: Vector3f = Vector3f::new(1.0, 0.0, 0.0);
+
         for (i, pi) in self.particles.iter().enumerate() {
             let neighbours = self.get_neighbours(i, accel);
 
@@ -152,8 +160,10 @@ impl Universe {
 
             let pressure = K * ((rho / REST_RHO).powf(7.0) - 1.0);
 
+            let col = COL_BLUE.lerp(COL_RED, rho / REST_RHO);
+
             new_particles.push(Particle::new(
-                pi.pos, pi.col, pi.vel, pi.mass, rho, pressure
+                pi.pos, col, pi.vel, pi.mass, rho, pressure
             ));
         }
 

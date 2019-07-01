@@ -32,6 +32,7 @@ fn point_line_dist(p: Vector3f, line: &(Vector3f, Vector3f)) -> Option<f32> {
 
     let intersect_length = (poi - p).magnitude();
 
+    // TODO: Figure out when poi doesn't actually lie on the line
     Some(intersect_length)
 }
 
