@@ -10,19 +10,20 @@ use kiss3d::window::Window;
 use kiss3d::event::{WindowEvent, Key, Action};
 use kiss3d::light::Light;
 use kiss3d::text::{Font};
-use spherro::{Universe};
+use spherro::{Universe, InitializerStrategy};
 
 const VIZ_SCALE: f32 = 0.001;
 
 fn main() {
     let mut window = Window::new("spherro");
+    const STRATEGY: InitializerStrategy = InitializerStrategy::DAMBREAK;
     window.set_background_color(0.85, 0.85, 0.85);
 
     let eye = na::Point3::new(300.0, 300.0, 800.0) * VIZ_SCALE;
     let look_at = na::Point3::new(300.0, 300.0, 0.0) * VIZ_SCALE;
     let mut first_person = kiss3d::camera::FirstPerson::new(eye, look_at);
 
-    let mut universe = Universe::new(600.0, 600.0);
+    let mut universe = Universe::new(600.0, 600.0, STRATEGY);
     let mut viz_objs: Vec<kiss3d::scene::SceneNode> = Vec::new();
 
     for _i in 0..universe.get_size() {
@@ -78,7 +79,7 @@ fn main() {
 
                 },
                 WindowEvent::Key(Key::R, Action::Press, _) => {
-                    universe = Universe::new(600.0, 600.0);
+                    universe = Universe::new(600.0, 600.0, STRATEGY);
                 },
                 _ => {}
             }

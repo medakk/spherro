@@ -10,7 +10,7 @@ const VISC: f32 = 10.0;
 const REST_RHO: f32 = 1.0 / (5.0 * 5.0 * 5.0);
 const BOUNCE_MIN_DV: f32 = 1000.0;
 const GRAVITY: f32 = -10000.0;
-const K: f32 = 100.0;
+const K: f32 = 10.0;
 
 #[wasm_bindgen]
 pub struct Universe {
@@ -19,44 +19,56 @@ pub struct Universe {
     height: f32,
 }
 
-impl Universe {
-    // All debug functions
-
-    pub fn debug_update(&mut self, _dt: f32) {
-        let accel = Octree::new(self.width, self.height, &self.particles);
-        let neighbours = self.get_neighbour_indices(0, &accel);
-        self.particles[0].col = vec3f_zero();
-        for j in neighbours.into_iter() {
-            self.particles[j].col = Vector3f::new(1.0, 1.0, 0.0);
-        }
-    }
-
-    pub fn debug_splits(&self) -> Vec<(Vector3f, Vector3f)> {
-        let accel = Octree::new(self.width, self.height, &self.particles);
-        accel.debug_get_splits()
-    }
-
-    pub fn clear_colors(&mut self) {
-        for pi in self.particles.iter_mut() {
-            pi.col = Vector3f::new(0.0, 0.0, 1.0);
-        }
-    }
+pub enum InitializerStrategy {
+    RANDOM,
+    DAMBREAK,
 }
 
 #[wasm_bindgen]
 impl Universe {
-    pub fn new(width: f32, height: f32) -> Universe {
-        let mut rng = rand::thread_rng();
-        let mut particles = Vec::new();
+    pub fn new(width: f32, height: f32, strategy: InitializerStrategy) -> Universe {
+        let particles = match strategy {
+            InitializerStrategy::RANDOM => {
+                let mut rng = rand::thread_rng();
+                let mut particles = Vec::new();
 
-        for _ in 0..500 {
-            let x: f32 = rng.gen::<f32>() * width;
-            let y: f32 = rng.gen::<f32>() * height;
+                for _ in 0..500 {
+                    let x: f32 = rng.gen::<f32>() * width;
+                    let y: f32 = rng.gen::<f32>() * height;
 
-            let position = Vector3f::new(x, y, 0.0);
-            let col = Vector3f::new(0.0, 0.0, 1.0);
-            particles.push(Particle::new(position, col, vec3f_zero(), 100.0, 1.0, 1.0));
-        }
+                    let position = Vector3f::new(x, y, 0.0);
+                    let col = Vector3f::new(0.0, 0.0, 1.0);
+                    particles.push(Particle::new(position, col, vec3f_zero(), 100.0, 1.0, 1.0));
+                }
+
+                particles
+            },
+            InitializerStrategy::DAMBREAK => {
+                let mut particles = Vec::new();
+
+                let width = 0.40 * width;
+                let height = 0.80 * height;
+
+                let rows = 50.0;
+                let cols = 10.0;
+
+                let x_spacing = (width / cols) as usize;
+                let y_spacing = (height / rows) as usize;
+
+                for i in 0..cols as usize {
+                    for j in 0..rows as usize {
+                        let x = (x_spacing * (i + (j % 2))) as f32;
+                        let y = (y_spacing * j) as f32;
+
+                        let position = Vector3f::new(x, y, 0.0);
+                        let col = Vector3f::new(0.0, 0.0, 1.0);
+                        particles.push(Particle::new(position, col, vec3f_zero(), 100.0, 1.0, 1.0));
+                    }
+                }
+
+                particles
+            }
+        };
 
         Universe {
             particles,
@@ -222,5 +234,29 @@ fn cubic_spline(q: f32) -> (f32, f32) {
         (v, dv)
     } else {
         (0.0, 0.0)
+    }
+}
+
+impl Universe {
+    // All debug functions
+
+    pub fn debug_update(&mut self, _dt: f32) {
+        let accel = Octree::new(self.width, self.height, &self.particles);
+        let neighbours = self.get_neighbour_indices(0, &accel);
+        self.particles[0].col = vec3f_zero();
+        for j in neighbours.into_iter() {
+            self.particles[j].col = Vector3f::new(1.0, 1.0, 0.0);
+        }
+    }
+
+    pub fn debug_splits(&self) -> Vec<(Vector3f, Vector3f)> {
+        let accel = Octree::new(self.width, self.height, &self.particles);
+        accel.debug_get_splits()
+    }
+
+    pub fn clear_colors(&mut self) {
+        for pi in self.particles.iter_mut() {
+            pi.col = Vector3f::new(0.0, 0.0, 1.0);
+        }
     }
 }

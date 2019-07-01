@@ -12,7 +12,7 @@ mod universe;
 
 // Re-export some names for flatter syntax
 pub use particle::Particle;
-pub use universe::Universe;
+pub use universe::{Universe, InitializerStrategy};
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
