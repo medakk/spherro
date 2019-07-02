@@ -1,12 +1,9 @@
 use crate::util::{Vector3f};
+use crate::accelerators::{HasPosition, Accelerator};
 use cgmath::{MetricSpace, InnerSpace};
 
 const MIN_POINTS: usize = 5;
 const MAX_DEPTH: usize = 16;
-
-pub trait HasPosition {
-    fn position(&self) -> Vector3f;
-}
 
 // The node only stores the index of the item
 struct Node {
@@ -73,6 +70,15 @@ fn circle_rect_collide(circle: (Vector3f, f32), rect: &(Vector3f, Vector3f)) -> 
     check(&l4)
 }
 
+impl<'a, T> Accelerator for Quadtree<'a, T> where T: HasPosition + Clone {
+    fn nearest_neighbours(&self, i: usize, r: f32) -> Vec<usize> {
+        let tl = Vector3f::new(0.0, 0.0, 0.0);
+        let br = Vector3f::new(self.width, self.height, 0.0);
+
+        self.node_search(&self.root, i, r, tl, br)
+    }
+}
+
 impl<'a, T> Quadtree<'a, T> where T: HasPosition + Clone {
     pub fn new(width: f32, height: f32, items: &'a [T]) -> Self {
         let tl = Vector3f::new(0.0, 0.0, 0.0);
@@ -83,7 +89,7 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition + Clone {
             indices.push(i);
         }
 
-        let root = Quadtree::<T>::construct_tree(tl, br, items, &indices, 0);
+        let root = Quadtree::<T>::node_construct(tl, br, items, &indices, 0);
         Quadtree{
             root: root,
             width: width,
@@ -92,14 +98,7 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition + Clone {
         }
     }
 
-    pub fn nearest_neighbours_indices(&self, i: usize, r: f32) -> Vec<usize> {
-        let tl = Vector3f::new(0.0, 0.0, 0.0);
-        let br = Vector3f::new(self.width, self.height, 0.0);
-
-        self.tree_search(&self.root, i, r, tl, br)
-    }
-
-    fn tree_search(&self, node: &Node, i: usize, r: f32, tl: Vector3f, br: Vector3f) -> Vec<usize> {
+    fn node_search(&self, node: &Node, i: usize, r: f32, tl: Vector3f, br: Vector3f) -> Vec<usize> {
         let pos = self.items[i].position();
         let mut v: Vec<usize> = Vec::new();
 
@@ -119,14 +118,6 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition + Clone {
             return v;
         }
 
-        /*
-        // Uncomment for brute force
-        for child in node.children.iter() {
-            v.extend(self.tree_search(&child, i, r, tl, br));
-        }
-        return v;
-        */
-
         let mid = (tl + br) / 2.0;
 
         let rect0 = (tl, mid);
@@ -136,14 +127,14 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition + Clone {
 
         for (child, rect) in izip!(node.children.iter(), [rect0, rect1, rect2, rect3].iter()) {
             if circle_rect_collide((pos, r), rect) {
-                v.extend(self.tree_search(&child, i, r, rect.0, rect.1));
+                v.extend(self.node_search(&child, i, r, rect.0, rect.1));
             }
         }
 
         v
     }
 
-    fn construct_tree(tl: Vector3f, br: Vector3f, items: &'a [T], indices: &[usize], depth: usize) -> Node {
+    fn node_construct(tl: Vector3f, br: Vector3f, items: &'a [T], indices: &[usize], depth: usize) -> Node {
         if indices.len() < MIN_POINTS || depth == MAX_DEPTH {
             return Node{
                 items: indices.to_vec(),
@@ -175,16 +166,16 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition + Clone {
 
         let mut children: Vec<Node> = Vec::new();
 
-        children.push(Quadtree::<T>::construct_tree(
+        children.push(Quadtree::<T>::node_construct(
             tl, mid, items, &nw, depth+1
         ));
-        children.push(Quadtree::<T>::construct_tree(
+        children.push(Quadtree::<T>::node_construct(
             Vector3f::new(mid.x, tl.y, 0.0), Vector3f::new(br.x, mid.y, 0.0), items, &ne, depth+1
         ));
-        children.push(Quadtree::<T>::construct_tree(
+        children.push(Quadtree::<T>::node_construct(
             mid, br, items, &se, depth+1
         ));
-        children.push(Quadtree::<T>::construct_tree(
+        children.push(Quadtree::<T>::node_construct(
             Vector3f::new(tl.x, mid.y, 0.0), Vector3f::new(mid.x, br.y, 0.0), items, &sw, depth+1
         ));
 

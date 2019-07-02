@@ -2,7 +2,7 @@ use wasm_bindgen::prelude::*;
 use cgmath::{InnerSpace, VectorSpace};
 use crate::util::*;
 use crate::particle::{Particle};
-use crate::quadtree::{Quadtree};
+use crate::accelerators::{Accelerator, Quadtree};
 use crate::initializer;
 use crate::kernel::{Kernel, CubicSpline};
 
@@ -40,7 +40,7 @@ impl Universe {
     pub fn update(&mut self, dt: f32) {
         let accel = Quadtree::new(self.width, self.height, &self.particles);
         self.neighbours = (0..self.particles.len()).map(|i| {
-            accel.nearest_neighbours_indices(i, H*2.0)
+            accel.nearest_neighbours(i, H*2.0)
         }).collect();
 
         //TODO: Figure out how to update these things in place
@@ -200,7 +200,7 @@ impl Universe {
     }
     
     fn get_neighbour_indices(&self, i: usize, accel: &Quadtree<Particle>) -> Vec<usize> {
-        let neighbour_indices = accel.nearest_neighbours_indices(i, H*2.0);
+        let neighbour_indices = accel.nearest_neighbours(i, H*2.0);
         neighbour_indices
     }
 

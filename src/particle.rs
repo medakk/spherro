@@ -1,5 +1,5 @@
 use crate::util::{Vector3f};
-use crate::quadtree::{HasPosition};
+use crate::accelerators::{HasPosition};
 
 #[repr(C)]
 #[derive(Clone)]

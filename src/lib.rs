@@ -6,7 +6,7 @@ mod util;
 #[macro_use]
 extern crate itertools;
 
-mod quadtree;
+mod accelerators;
 mod particle;
 mod universe;
 pub mod initializer;
