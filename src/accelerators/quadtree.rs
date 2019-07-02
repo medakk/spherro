@@ -5,18 +5,20 @@ use cgmath::{MetricSpace, InnerSpace};
 const MIN_POINTS: usize = 5;
 const MAX_DEPTH: usize = 16;
 
-// The node only stores the index of the item
-struct Node {
-    items: Vec<usize>,
-    children: Vec<Node>,
-}
-
+//TODO: Write tests for quadtree
 pub struct Quadtree<'a, T> {
     root: Node,
     width: f32,
     height: f32,
     items: &'a [T],
 }
+
+// The node only stores the index of the item
+struct Node {
+    items: Vec<usize>,
+    children: Vec<Node>,
+}
+
 
 fn point_line_dist(p: Vector3f, line: &(Vector3f, Vector3f)) -> Option<f32> {
     let line_vec = (line.1 - line.0).normalize();
@@ -213,13 +215,5 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition + Clone {
         v.extend(self.debug_node_splits(&node.children[3], Vector3f::new(tl.x, mid.y, 0.0), Vector3f::new(mid.x, br.y, 0.0)));
 
         v
-    }
-}
-
-//TODO: Write tests for quadtree
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_quadtree() {
     }
 }
