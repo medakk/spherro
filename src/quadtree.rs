@@ -1,9 +1,6 @@
 use crate::util::{Vector3f};
 use cgmath::{MetricSpace, InnerSpace};
 
-//TODO: Implement the OCTREE! :p
-// this is currently a quadtree
-
 const MIN_POINTS: usize = 5;
 const MAX_DEPTH: usize = 16;
 
@@ -17,7 +14,7 @@ struct Node {
     children: Vec<Node>,
 }
 
-pub struct Octree<'a, T> {
+pub struct Quadtree<'a, T> {
     root: Node,
     width: f32,
     height: f32,
@@ -76,7 +73,7 @@ fn circle_rect_collide(circle: (Vector3f, f32), rect: &(Vector3f, Vector3f)) -> 
     check(&l4)
 }
 
-impl<'a, T> Octree<'a, T> where T: HasPosition + Clone {
+impl<'a, T> Quadtree<'a, T> where T: HasPosition + Clone {
     pub fn new(width: f32, height: f32, items: &'a [T]) -> Self {
         let tl = Vector3f::new(0.0, 0.0, 0.0);
         let br = Vector3f::new(width, height, 0.0);
@@ -86,8 +83,8 @@ impl<'a, T> Octree<'a, T> where T: HasPosition + Clone {
             indices.push(i);
         }
 
-        let root = Octree::<T>::construct_tree(tl, br, items, &indices, 0);
-        Octree{
+        let root = Quadtree::<T>::construct_tree(tl, br, items, &indices, 0);
+        Quadtree{
             root: root,
             width: width,
             height: height,
@@ -178,16 +175,16 @@ impl<'a, T> Octree<'a, T> where T: HasPosition + Clone {
 
         let mut children: Vec<Node> = Vec::new();
 
-        children.push(Octree::<T>::construct_tree(
+        children.push(Quadtree::<T>::construct_tree(
             tl, mid, items, &nw, depth+1
         ));
-        children.push(Octree::<T>::construct_tree(
+        children.push(Quadtree::<T>::construct_tree(
             Vector3f::new(mid.x, tl.y, 0.0), Vector3f::new(br.x, mid.y, 0.0), items, &ne, depth+1
         ));
-        children.push(Octree::<T>::construct_tree(
+        children.push(Quadtree::<T>::construct_tree(
             mid, br, items, &se, depth+1
         ));
-        children.push(Octree::<T>::construct_tree(
+        children.push(Quadtree::<T>::construct_tree(
             Vector3f::new(tl.x, mid.y, 0.0), Vector3f::new(mid.x, br.y, 0.0), items, &sw, depth+1
         ));
 
@@ -228,10 +225,10 @@ impl<'a, T> Octree<'a, T> where T: HasPosition + Clone {
     }
 }
 
+//TODO: Write tests for quadtree
 #[cfg(test)]
 mod tests {
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+    fn test_quadtree() {
     }
 }
