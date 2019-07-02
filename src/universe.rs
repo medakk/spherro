@@ -165,7 +165,7 @@ impl Universe {
 
             let W: Vec<f32> = x_ijs.iter().map(|x_ij| {
                 let q = x_ij.magnitude() / H;
-                cubic_spline(q).0 / H.powf(3.0)
+                cubic_spline(q).0 / H.powi(3)
             }).collect();
 
             let mut rho: f32 = 0.0;
@@ -173,7 +173,7 @@ impl Universe {
                 rho += pj.mass * W[j]
             }
 
-            let pressure = K * ((rho / REST_RHO).powf(7.0) - 1.0);
+            let pressure = K * ((rho / REST_RHO).powi(7) - 1.0);
 
             let col = COL_BLUE.lerp(COL_RED, rho / REST_RHO);
 
@@ -198,7 +198,7 @@ impl Universe {
 
             // Derivative of q wrt x, y and z
             let dq = (pi.pos - pj.pos) / (H * q);
-            let dW = (1.0 / H.powf(3.0)) * df * dq;
+            let dW = (1.0 / H.powi(3)) * df * dq;
 
             dW
         }).collect();
@@ -206,7 +206,7 @@ impl Universe {
 
         // Compute gradient of pressure
         let dP: Vector3f = pi.rho * izip!(&neighbours, &dWs).map(|(pj, dW)| {
-            pj.mass * (pi.pressure / pi.rho.powf(2.0) + pj.pressure / pj.rho.powf(2.0)) * dW
+            pj.mass * (pi.pressure / pi.rho.powi(2) + pj.pressure / pj.rho.powi(2)) * dW
         }).sum::<Vector3f>();
 
         // Compute laplacian of velocities
@@ -234,8 +234,8 @@ fn cubic_spline(q: f32) -> (f32, f32) {
         let dv = (-2.0 * q) + (1.5 * q*q);
         (v, dv)
     } else if 1.0 <= q && q < 2.0 {
-        let v = (1.0/6.0) * (2.0 - q).powf(3.0);
-        let dv = -0.5 * (2.0 - q).powf(2.0);
+        let v = (1.0/6.0) * (2.0 - q).powi(3);
+        let dv = -0.5 * (2.0 - q).powi(2);
         (v, dv)
     } else {
         (0.0, 0.0)
