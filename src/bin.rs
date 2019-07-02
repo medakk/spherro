@@ -10,13 +10,14 @@ use kiss3d::window::Window;
 use kiss3d::event::{WindowEvent, Key, Action};
 use kiss3d::light::Light;
 use kiss3d::text::{Font};
-use spherro::{Universe, InitializerStrategy};
+use spherro::{Universe};
+use spherro::initializer::Strategy;
 
 const VIZ_SCALE: f32 = 0.001;
 
 fn main() {
     let mut window = Window::new("spherro");
-    const STRATEGY: InitializerStrategy = InitializerStrategy::DAMBREAK;
+    const STRATEGY: Strategy = Strategy::DAMBREAK;
     window.set_background_color(0.85, 0.85, 0.85);
 
     let eye = na::Point3::new(300.0, 300.0, 800.0) * VIZ_SCALE;

@@ -9,10 +9,12 @@ extern crate itertools;
 mod octree;
 mod particle;
 mod universe;
+pub mod initializer;
+mod kernel;
 
 // Re-export some names for flatter syntax
 pub use particle::Particle;
-pub use universe::{Universe, InitializerStrategy};
+pub use universe::{Universe};
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
