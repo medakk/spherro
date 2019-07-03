@@ -9,7 +9,7 @@ use crate::kernel::{Kernel, CubicSpline};
 const H: f32 = 30.0;
 const VISC: f32 = 10.0;
 const REST_RHO: f32 = 1.0 / (5.0 * 5.0 * 5.0);
-const BOUNCE_MIN_DV: f32 = 1000.0;
+const BOUNCE_MIN_DV: f32 = 500.0;
 const GRAVITY: f32 = -10000.0;
 const K: f32 = 10.0;
 
