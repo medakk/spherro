@@ -13,6 +13,10 @@ crate-type = ["cdylib", "rlib"]
 name = "spherro-bin"
 path = "src/bin.rs"
 
+[[bin]]
+name = "playground"
+path = "src/playground.rs"
+
 [features]
 default = ["console_error_panic_hook"]
 
@@ -40,6 +44,11 @@ wee_alloc = { version = "0.4.2", optional = true }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.2"
+criterion = "0.2.11"
+
+[[bench]]
+name = "solver"
+harness = false
 
 [dependencies.web-sys]
 version = "0.3"
@@ -47,6 +56,6 @@ features = [
   "console",
 ]
 
-[profile.release]
+#[profile.release]
 # Tell `rustc` to optimize for small code size.
-opt-level = "s"
+# opt-level = "s"
