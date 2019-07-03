@@ -38,7 +38,7 @@ impl Universe {
     }
 
     pub fn update(&mut self, dt: f32) {
-        let accel = Grid::new(self.width, self.height, H*2.0, &self.particles);
+        let accel = Grid::new(self.width, self.height, H, &self.particles);
         self.neighbours = (0..self.particles.len()).map(|i| {
             accel.nearest_neighbours(i, H*2.0)
         }).collect();
@@ -73,25 +73,14 @@ impl Universe {
         const COL_RED: Vector3f = Vector3f::new(1.0, 0.0, 0.0);
 
         self.particles.iter().enumerate().map(|(i, pi)| {
-            let neighbours: Vec<&Particle> = self.neighbours[i]
-                                             .iter()
-                                             .map(|&j| { &self.particles[j] })
-                                             .collect();
-
-            let x_ijs: Vec<Vector3f> = neighbours.iter().map(|&pj| {
-                pi.pos - pj.pos
-            }).collect();
-
-            let W: Vec<f32> = x_ijs.iter().map(|x_ij| {
+            let rho: f32 = self.neighbours[i].iter().map(|&j| {
+                let pj = &self.particles[j];
+                let x_ij = pi.pos - pj.pos;
                 let q = x_ij.magnitude() / H;
-                (*self.kernel).f(q) / H.powi(3)
-            }).collect();
+                let Wj = (*self.kernel).f(q) / H.powi(3);
+                pj.mass * Wj
+            }).sum();
 
-            let rho: f32 = izip!(neighbours, &W)
-                          .map(|(pj, Wj)| {
-                              pj.mass * Wj
-                           })
-                          .sum();
             let pressure = K * ((rho / REST_RHO).powi(7) - 1.0);
             let col = COL_BLUE.lerp(COL_RED, rho / REST_RHO);
 
@@ -150,7 +139,7 @@ impl Universe {
 
 
         // Compute gradient of pressure
-        let dP: Vector3f = pi.rho * izip!(&neighbours, &dWs).map(|(pj, dW)| {
+        let dP = pi.rho * izip!(&neighbours, &dWs).map(|(pj, dW)| {
             pj.mass * (pi.pressure / pi.rho.powi(2) + pj.pressure / pj.rho.powi(2)) * dW
         }).sum::<Vector3f>();
 
