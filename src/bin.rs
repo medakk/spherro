@@ -86,11 +86,11 @@ fn main() {
             }
         }
 
-        universe.clear_colors();
-        // universe.debug_update(dt);
         for _ in 0..1 {
             universe.update(0.001);
         }
+        // universe.clear_colors();
+        // universe.debug_update(dt);
 
         // Debug octree
         if false {

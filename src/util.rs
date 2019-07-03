@@ -8,12 +8,14 @@ pub fn vec3f_zero() -> Vector3f {
     Vector3f::new(0.0, 0.0, 0.0)
 }
 
+/*
 // A macro to provide `println!(..)`-style syntax for `console.log` logging.
 macro_rules! log {
     ( $( $t:tt )* ) => {
         web_sys::console::log_1(&format!( $( $t )* ).into());
     }
 }
+*/
 
 pub fn set_panic_hook() {
     // When the `console_error_panic_hook` feature is enabled, we can call the
