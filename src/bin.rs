@@ -92,7 +92,7 @@ fn main() {
         // universe.clear_colors();
         // universe.debug_update(dt);
 
-        // Debug octree
+        // Debug accelerator
         if false {
             let lines = universe.debug_splits();
             for (p1, p2) in lines.iter() {

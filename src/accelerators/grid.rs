@@ -17,18 +17,23 @@ struct Cell {
 impl<'a, T> Accelerator for Grid<'a, T> where T: HasPosition {
     fn nearest_neighbours(&self, i: usize, r: f32) -> Vec<usize> {
         let cols = (self.width / self.bin_size).ceil() as usize;
-        let rows = (self.height / self.bin_size).ceil() as usize;
+        let _rows = (self.height / self.bin_size).ceil() as usize;
         let mut neighbours = Vec::new();
 
         let pos = self.items[i].position();
 
-        let x_start = max_f32(((pos.x - r) / self.bin_size).floor(), 0.0) as usize;
-        let x_end   = min_f32(((pos.x + r) / self.bin_size).floor(), (cols-1) as f32) as usize;
-        let y_start = max_f32(((pos.y - r) / self.bin_size).floor(), 0.0) as usize;
-        let y_end   = min_f32(((pos.y + r) / self.bin_size).floor(), (rows-1) as f32) as usize;
+        let x0 = min_f32(max_f32(pos.x - r, 0.0), self.width  as f32 - 0.1);
+        let x1 = min_f32(max_f32(pos.x + r, 0.0), self.width  as f32 - 0.1);
+        let y0 = min_f32(max_f32(pos.y - r, 0.0), self.height as f32 - 0.1);
+        let y1 = min_f32(max_f32(pos.y + r, 0.0), self.height as f32 - 0.1);
 
-        for x in x_start..x_end+1 {
-            for y in y_start..y_end+1 {
+        let x0 = (x0 / self.bin_size).floor() as usize;
+        let x1 = (x1 / self.bin_size).floor() as usize;
+        let y0 = (y0 / self.bin_size).floor() as usize;
+        let y1 = (y1 / self.bin_size).floor() as usize;
+
+        for x in x0..x1+1 {
+            for y in y0..y1+1 {
                 let idx = y * cols + x;
                 for j in self.cells[idx].items.iter() {
                     if *j == i {
@@ -71,10 +76,13 @@ impl<'a, T> Grid<'a, T> where T: HasPosition {
 
         for (i, pi) in items.iter().enumerate() {
             let pos = pi.position();
-            let x = max_f32((pos.x / bin_size).floor(), 0.0) as usize;
-            let y = max_f32((pos.y / bin_size).floor(), 0.0) as usize;
-            let x = min_usize(x, cols-1);
-            let y = min_usize(y, rows-1);
+
+            let x = min_f32(max_f32(pos.x, 0.0), width-0.1);
+            let y = min_f32(max_f32(pos.y, 0.0), height-0.1);
+            let x = (x / bin_size).floor() as usize;
+            let y = (y / bin_size).floor() as usize;
+            // println!("construct: {} {}", x, y);
+
             let idx = y * cols + x;
             cells[idx].items.push(i);
         }
