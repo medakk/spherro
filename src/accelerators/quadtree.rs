@@ -89,7 +89,7 @@ fn circle_rect_collide(circle: &Circle, rect: &Rect) -> bool {
     check(l1) || check(l2) || check(l3) || check(l4)
 }
 
-impl<'a, T> Accelerator for Quadtree<'a, T> where T: HasPosition + Clone {
+impl<'a, T> Accelerator for Quadtree<'a, T> where T: HasPosition {
     fn nearest_neighbours(&self, i: usize, r: f32) -> Vec<usize> {
         let tl = Vector3f::new(0.0, 0.0, 0.0);
         let br = Vector3f::new(self.width, self.height, 0.0);
@@ -98,7 +98,7 @@ impl<'a, T> Accelerator for Quadtree<'a, T> where T: HasPosition + Clone {
     }
 }
 
-impl<'a, T> Quadtree<'a, T> where T: HasPosition + Clone {
+impl<'a, T> Quadtree<'a, T> where T: HasPosition {
     pub fn new(width: f32, height: f32, items: &'a [T]) -> Self {
         let tl = Vector3f::new(0.0, 0.0, 0.0);
         let br = Vector3f::new(width, height, 0.0);
