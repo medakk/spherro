@@ -28,8 +28,5 @@ pub fn set_panic_hook() {
     console_error_panic_hook::set_once();
 }
 
-pub fn min_f32(a: f32, b: f32) -> f32 { if a < b { a } else { b } }
-pub fn max_f32(a: f32, b: f32) -> f32 { if a > b { a } else { b } }
-
-pub fn min_usize(a: usize, b: usize) -> usize { if a < b { a } else { b } }
-pub fn max_usize(a: usize, b: usize) -> usize { if a > b { a } else { b } }
+#[inline]
+pub fn clamp_f32(v: f32, a: f32, b: f32) -> f32 { b.min(v.max(a)) }

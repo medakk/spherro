@@ -22,10 +22,10 @@ impl<'a, T> Accelerator for Grid<'a, T> where T: HasPosition {
 
         let pos = self.items[i].position();
 
-        let x0 = min_f32(max_f32(pos.x - r, 0.0), self.width  as f32 - 0.1);
-        let x1 = min_f32(max_f32(pos.x + r, 0.0), self.width  as f32 - 0.1);
-        let y0 = min_f32(max_f32(pos.y - r, 0.0), self.height as f32 - 0.1);
-        let y1 = min_f32(max_f32(pos.y + r, 0.0), self.height as f32 - 0.1);
+        let x0 = clamp_f32(pos.x - r, 0.0, self.width  as f32 - 1e-2);
+        let x1 = clamp_f32(pos.x + r, 0.0, self.width  as f32 - 1e-2);
+        let y0 = clamp_f32(pos.y - r, 0.0, self.height as f32 - 1e-2);
+        let y1 = clamp_f32(pos.y + r, 0.0, self.height as f32 - 1e-2);
 
         let x0 = (x0 / self.bin_size).floor() as usize;
         let x1 = (x1 / self.bin_size).floor() as usize;
@@ -77,11 +77,10 @@ impl<'a, T> Grid<'a, T> where T: HasPosition {
         for (i, pi) in items.iter().enumerate() {
             let pos = pi.position();
 
-            let x = min_f32(max_f32(pos.x, 0.0), width-0.1);
-            let y = min_f32(max_f32(pos.y, 0.0), height-0.1);
+            let x = clamp_f32(pos.x, 0.0, width-1e-2);
+            let y = clamp_f32(pos.y, 0.0, height-1e-2);
             let x = (x / bin_size).floor() as usize;
             let y = (y / bin_size).floor() as usize;
-            // println!("construct: {} {}", x, y);
 
             let idx = y * cols + x;
             cells[idx].items.push(i);

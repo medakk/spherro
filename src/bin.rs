@@ -47,7 +47,7 @@ fn main() {
         let r = na::UnitQuaternion::from_euler_angles(
                                     0.0, 0.0, i as f32 * std::f32::consts::PI / 2.0);
         let ro = na::Translation3::new(300.0*VIZ_SCALE, 300.0*VIZ_SCALE, 0.0); // rotation origin
-        let ro_inv = na::Translation3::new(-300.0*VIZ_SCALE, -300.0*VIZ_SCALE, 0.0); // rotation origin
+        let ro_inv = na::Translation3::new(-300.0*VIZ_SCALE, -300.0*VIZ_SCALE, 0.0);
         let transform = ro * r * ro_inv * t;
         c.set_local_transformation(transform);
     }
@@ -89,11 +89,12 @@ fn main() {
         for _ in 0..1 {
             universe.update(0.001);
         }
-        // universe.clear_colors();
-        // universe.debug_update(dt);
 
         // Debug accelerator
         if false {
+            universe.clear_colors();
+            universe.debug_update(dt);
+
             let lines = universe.debug_splits();
             for (p1, p2) in lines.iter() {
                 let p1 = na::Point3::new(p1.x, p1.y, p1.z) * VIZ_SCALE;

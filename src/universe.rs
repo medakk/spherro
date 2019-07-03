@@ -176,13 +176,13 @@ impl Universe {
 
         // Bounce off walls
         if pos.x < 0.0 {
-            vel.x = max_f32(-B*vel.x, BOUNCE_MIN_DV);
+            vel.x = (BOUNCE_MIN_DV).max(-B*vel.x);
         } else if pos.x > self.width {
-            vel.x = min_f32(-B*vel.x, -BOUNCE_MIN_DV);
+            vel.x = (-BOUNCE_MIN_DV).min(-B*vel.x);
         } else if pos.y < 0.0 {
-            vel.y = max_f32(-B*vel.y, BOUNCE_MIN_DV);
+            vel.y = (BOUNCE_MIN_DV).max(-B*vel.y);
         } else if pos.y > self.height {
-            vel.y = min_f32(-B*vel.y, -BOUNCE_MIN_DV);
+            vel.y = (-BOUNCE_MIN_DV).min(-B*vel.y);
         }
 
         vel
