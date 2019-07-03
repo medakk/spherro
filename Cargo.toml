@@ -56,6 +56,9 @@ features = [
   "console",
 ]
 
+[profile.release]
+debug = true
+
 #[profile.release]
 # Tell `rustc` to optimize for small code size.
 # opt-level = "s"
