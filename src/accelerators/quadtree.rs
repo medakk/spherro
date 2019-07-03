@@ -94,7 +94,7 @@ impl<'a, T> Accelerator for Quadtree<'a, T> where T: HasPosition {
         let tl = Vector3f::new(0.0, 0.0, 0.0);
         let br = Vector3f::new(self.width, self.height, 0.0);
 
-        self.node_search(&self.root, i, r, tl, br)
+        self.search_in_node(&self.root, i, r, tl, br)
     }
 }
 
@@ -108,7 +108,7 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition {
             indices.push(i);
         }
 
-        let root = Quadtree::<T>::node_construct(tl, br, items, &indices, 0);
+        let root = Quadtree::<T>::construct_node(tl, br, items, &indices, 0);
         Quadtree{
             root: root,
             width: width,
@@ -117,7 +117,7 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition {
         }
     }
 
-    fn node_search(&self, node: &Node, i: usize, r: f32, tl: Vector3f, br: Vector3f) -> Vec<usize> {
+    fn search_in_node(&self, node: &Node, i: usize, r: f32, tl: Vector3f, br: Vector3f) -> Vec<usize> {
         let pos = self.items[i].position();
         let mut v: Vec<usize> = Vec::new();
 
@@ -147,7 +147,7 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition {
 
         for (child, rect) in izip!(node.children.iter(), [rect0, rect1, rect2, rect3].iter()) {
             if circle_rect_collide(&circle, rect) {
-                let found = self.node_search(&child, i, r, rect.0, rect.1);
+                let found = self.search_in_node(&child, i, r, rect.0, rect.1);
                 v.extend(found);
             }
         }
@@ -155,7 +155,7 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition {
         v
     }
 
-    fn node_construct(tl: Vector3f, br: Vector3f, items: &'a [T], indices: &[usize], depth: usize) -> Node {
+    fn construct_node(tl: Vector3f, br: Vector3f, items: &'a [T], indices: &[usize], depth: usize) -> Node {
         if indices.len() < MIN_POINTS || depth == MAX_DEPTH {
             return Node{
                 items: indices.to_vec(),
@@ -187,16 +187,16 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition {
 
         let mut children: Vec<Node> = Vec::new();
 
-        children.push(Quadtree::<T>::node_construct(
+        children.push(Quadtree::<T>::construct_node(
             tl, mid, items, &nw, depth+1
         ));
-        children.push(Quadtree::<T>::node_construct(
+        children.push(Quadtree::<T>::construct_node(
             Vector3f::new(mid.x, tl.y, 0.0), Vector3f::new(br.x, mid.y, 0.0), items, &ne, depth+1
         ));
-        children.push(Quadtree::<T>::node_construct(
+        children.push(Quadtree::<T>::construct_node(
             mid, br, items, &se, depth+1
         ));
-        children.push(Quadtree::<T>::node_construct(
+        children.push(Quadtree::<T>::construct_node(
             Vector3f::new(tl.x, mid.y, 0.0), Vector3f::new(mid.x, br.y, 0.0), items, &sw, depth+1
         ));
 
