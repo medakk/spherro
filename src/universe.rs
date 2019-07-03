@@ -1,5 +1,6 @@
 use wasm_bindgen::prelude::*;
 use cgmath::{InnerSpace, VectorSpace};
+use rayon::prelude::*;
 use crate::util::*;
 use crate::particle::{Particle};
 use crate::accelerators::{Accelerator, Grid};
@@ -19,7 +20,7 @@ pub struct Universe {
     width: f32,
     height: f32,
     neighbours: Vec<Vec<usize>>,
-    kernel: Box<Kernel>,
+    kernel: Box<Kernel + std::marker::Sync>,
 }
 
 #[wasm_bindgen]
@@ -39,7 +40,7 @@ impl Universe {
 
     pub fn update(&mut self, dt: f32) {
         let accel = Grid::new(self.width, self.height, H*2.0, &self.particles);
-        self.neighbours = (0..self.particles.len()).map(|i| {
+        self.neighbours = (0..self.particles.len()).into_par_iter().map(|i| {
             accel.nearest_neighbours(i, H*2.0)
         }).collect();
 
@@ -72,7 +73,7 @@ impl Universe {
         const COL_BLUE: Vector3f = Vector3f::new(0.0, 0.0, 1.0);
         const COL_RED: Vector3f = Vector3f::new(1.0, 0.0, 0.0);
 
-        self.particles.iter().enumerate().map(|(i, pi)| {
+        self.particles.par_iter().enumerate().map(|(i, pi)| {
             let neighbours: Vec<&Particle> = self.neighbours[i]
                                              .iter()
                                              .map(|&j| { &self.particles[j] })
@@ -105,7 +106,7 @@ impl Universe {
     }
 
     fn updated_particle_positions(&self, dt: f32) -> Vec<Particle> {
-        self.particles.iter().enumerate().map(|(i, pi)| {
+        self.particles.par_iter().enumerate().map(|(i, pi)| {
             let neighbours: Vec<&Particle> = self.neighbours[i]
                                              .iter()
                                              .map(|&j| { &self.particles[j] })
