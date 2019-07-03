@@ -2,7 +2,7 @@ use wasm_bindgen::prelude::*;
 use cgmath::{InnerSpace, VectorSpace};
 use crate::util::*;
 use crate::particle::{Particle};
-use crate::accelerators::{Accelerator, Quadtree};
+use crate::accelerators::{Accelerator, Quadtree, Grid};
 use crate::initializer;
 use crate::kernel::{Kernel, CubicSpline};
 
@@ -38,7 +38,8 @@ impl Universe {
     }
 
     pub fn update(&mut self, dt: f32) {
-        let accel = Quadtree::new(self.width, self.height, &self.particles);
+        // let accel = Quadtree::new(self.width, self.height, &self.particles);
+        let accel = Grid::new(self.width, self.height, H*2.0, &self.particles);
         self.neighbours = (0..self.particles.len()).map(|i| {
             accel.nearest_neighbours(i, H*2.0)
         }).collect();
@@ -191,7 +192,8 @@ impl Universe {
 // All debug functions
 impl Universe {
     pub fn debug_update(&mut self, _dt: f32) {
-        let accel = Quadtree::new(self.width, self.height, &self.particles);
+        // let accel = Quadtree::new(self.width, self.height, &self.particles);
+        let accel = Grid::new(self.width, self.height, H*2.0, &self.particles);
         let neighbours = self.get_neighbour_indices(0, &accel);
         self.particles[0].col = vec3f_zero();
         for j in neighbours.into_iter() {
@@ -199,13 +201,14 @@ impl Universe {
         }
     }
     
-    fn get_neighbour_indices(&self, i: usize, accel: &Quadtree<Particle>) -> Vec<usize> {
+    fn get_neighbour_indices(&self, i: usize, accel: &Accelerator) -> Vec<usize> {
         let neighbour_indices = accel.nearest_neighbours(i, H*2.0);
         neighbour_indices
     }
 
     pub fn debug_splits(&self) -> Vec<(Vector3f, Vector3f)> {
-        let accel = Quadtree::new(self.width, self.height, &self.particles);
+        // let accel = Quadtree::new(self.width, self.height, &self.particles);
+        let accel = Grid::new(self.width, self.height, H*2.0, &self.particles);
         accel.debug_get_splits()
     }
 

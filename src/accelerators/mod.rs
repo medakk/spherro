@@ -9,5 +9,7 @@ pub trait Accelerator {
 }
 
 mod quadtree;
+mod grid;
 
 pub use quadtree::Quadtree;
+pub use grid::Grid;

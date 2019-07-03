@@ -5,6 +5,7 @@
 #[macro_use]
 extern crate itertools;
 
+#[allow(dead_code)]
 mod accelerators;
 mod particle;
 mod universe;
