@@ -19,7 +19,14 @@ pub fn initialize(width: f32, height: f32, strategy: Strategy) -> Vec<Particle> 
 
                 let position = Vector2f::new(x, y);
                 let col = Color::new(0.0, 0.0, 1.0);
-                particles.push(Particle::new(position, col, vec2f_zero(), 100.0, 1.0, 1.0));
+                particles.push(Particle{
+                    pos: position,
+                    col: col,
+                    vel: vec2f_zero(),
+                    mass: 100.0,
+                    rho: 0.0,
+                    pressure: 0.0
+                });
             }
 
             particles
@@ -43,7 +50,14 @@ pub fn initialize(width: f32, height: f32, strategy: Strategy) -> Vec<Particle> 
 
                     let position = Vector2f::new(x, y);
                     let col = Color::new(0.0, 0.0, 1.0);
-                    particles.push(Particle::new(position, col, vec2f_zero(), 100.0, 1.0, 1.0));
+                    particles.push(Particle{
+                        pos: position,
+                        col: col,
+                        vel: vec2f_zero(),
+                        mass: 100.0,
+                        rho: 0.0,
+                        pressure: 0.0
+                    });
                 }
             }
 

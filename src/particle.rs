@@ -5,17 +5,13 @@ use crate::accelerators::{HasPosition};
 #[derive(Clone)]
 pub struct Particle {
     pub pos: Vector2f,
+    // The color is more of a way to debug things than an actual property
+    // of the particle.
     pub col: Color,
     pub vel: Vector2f,
     pub mass: f32,
     pub rho: f32,
     pub pressure: f32,
-}
-
-impl Particle {
-    pub fn new(pos: Vector2f, col: Color, vel: Vector2f, mass: f32, rho: f32, pressure: f32) -> Particle {
-        Particle{pos, col, vel, mass, rho, pressure}
-    }
 }
 
 impl HasPosition for Particle {
