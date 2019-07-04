@@ -1,7 +1,9 @@
+use wasm_bindgen::prelude::*;
 use rand::Rng;
 use crate::Particle;
 use crate::util::*;
 
+#[wasm_bindgen]
 pub enum Strategy {
     RANDOM,
     DAMBREAK,
