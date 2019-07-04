@@ -65,8 +65,8 @@ impl Universe {
     }
 
     fn updated_particle_fields(&self, _dt: f32) -> Vec<Particle> {
-        const COL_BLUE: Vector3f = Vector3f::new(0.0, 0.0, 1.0);
-        const COL_RED: Vector3f = Vector3f::new(1.0, 0.0, 0.0);
+        const COL_BLUE: Color = Color::new(0.0, 0.0, 1.0);
+        const COL_RED: Color = Color::new(1.0, 0.0, 0.0);
 
         self.particles.iter().enumerate().map(|(i, pi)| {
             let rho: f32 = self.neighbours[i].iter().map(|&j| {
@@ -116,14 +116,14 @@ impl Universe {
         }).collect()
     }
 
-    fn compute_dv(&self, pi: &Particle, neighbours: Vec<&Particle>) -> Vector3f {
+    fn compute_dv(&self, pi: &Particle, neighbours: Vec<&Particle>) -> Vector2f {
         // Compute x_ijs
-        let x_ijs: Vec<Vector3f> = neighbours.iter().map(|pj| {
+        let x_ijs: Vec<Vector2f> = neighbours.iter().map(|pj| {
             pi.pos - pj.pos
         }).collect();
 
         // Compute gradient of W
-        let dWs: Vec<Vector3f> = izip!(&neighbours, &x_ijs).map(|(pj, x_ij)| {
+        let dWs: Vec<Vector2f> = izip!(&neighbours, &x_ijs).map(|(pj, x_ij)| {
             let q = x_ij.magnitude() / H;
             let df = cubicspline_df(q);
 
@@ -137,26 +137,26 @@ impl Universe {
         // Compute gradient of pressure
         let dP = pi.rho * izip!(&neighbours, &dWs).map(|(pj, dW)| {
             pj.mass * (pi.pressure / pi.rho.powi(2) + pj.pressure / pj.rho.powi(2)) * dW
-        }).sum::<Vector3f>();
+        }).sum::<Vector2f>();
 
         // Compute laplacian of velocities
         let ddv = 2.0 * izip!(&neighbours, &x_ijs, &dWs).map(|(pj, x_ij, dW)| {
             let q1 = (pj.mass / pj.rho) * (pi.vel - pj.vel);
             let q2 = (x_ij.dot(*dW)) / (x_ij.dot(*x_ij) + 0.01*H*H);
             q1 * q2
-        }).sum::<Vector3f>();
+        }).sum::<Vector2f>();
 
         // Accceleration due to gravity
-        let gravity = Vector3f::new(0.0, GRAVITY, 0.0);
+        let gravity = Vector2f::new(0.0, GRAVITY);
 
         let dv = (-1.0 / pi.rho) * dP + VISC * ddv + gravity;
 
         dv
     }
 
-    fn compute_wall_bounce(&self, pos: &Vector3f, vel: &Vector3f) -> Vector3f {
+    fn compute_wall_bounce(&self, pos: &Vector2f, vel: &Vector2f) -> Vector2f {
         const B: f32 = 0.9;
-        let mut vel: Vector3f = *vel;
+        let mut vel: Vector2f = *vel;
 
         // Bounce off walls
         if pos.x < 0.0 {
@@ -178,9 +178,9 @@ impl Universe {
     pub fn debug_update(&mut self, _dt: f32) {
         let accel = Grid::new(self.width, self.height, H, &self.particles);
         let neighbours = self.get_neighbour_indices(0, &accel);
-        self.particles[0].col = vec3f_zero();
+        self.particles[0].col = Color::new(0.0, 0.0, 0.0);
         for j in neighbours.into_iter() {
-            self.particles[j].col = Vector3f::new(1.0, 1.0, 0.0);
+            self.particles[j].col = Color::new(1.0, 1.0, 0.0);
         }
     }
     
@@ -188,14 +188,14 @@ impl Universe {
         accel.nearest_neighbours(i, H*2.0)
     }
 
-    pub fn debug_splits(&self) -> Vec<(Vector3f, Vector3f)> {
+    pub fn debug_splits(&self) -> Vec<(Vector2f, Vector2f)> {
         let accel = Grid::new(self.width, self.height, H*2.0, &self.particles);
         accel.debug_get_splits()
     }
 
     pub fn clear_colors(&mut self) {
         for pi in self.particles.iter_mut() {
-            pi.col = Vector3f::new(0.0, 0.0, 1.0);
+            pi.col = Color::new(0.0, 0.0, 1.0);
         }
     }
 }

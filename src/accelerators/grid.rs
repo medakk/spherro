@@ -92,22 +92,22 @@ impl<'a, T> Grid<'a, T> where T: HasPosition {
         cells
     }
 
-    pub fn debug_get_splits(&self) -> Vec<(Vector3f, Vector3f)> {
+    pub fn debug_get_splits(&self) -> Vec<(Vector2f, Vector2f)> {
         let mut splits = Vec::new();
         let cols = (self.width / self.bin_size).ceil() as usize;
         let rows = (self.height / self.bin_size).ceil() as usize;
 
         for x in 0..cols {
             splits.push((
-                Vector3f::new(x as f32 * self.bin_size, 0.0, 0.0),
-                Vector3f::new(x as f32 * self.bin_size, self.height, 0.0),
+                Vector2f::new(x as f32 * self.bin_size, 0.0),
+                Vector2f::new(x as f32 * self.bin_size, self.height),
             ));
         }
 
         for y in 0..rows {
             splits.push((
-                Vector3f::new(0.0, y as f32 * self.bin_size, 0.0),
-                Vector3f::new(self.width, y as f32 * self.bin_size, 0.0),
+                Vector2f::new(0.0, y as f32 * self.bin_size),
+                Vector2f::new(self.width, y as f32 * self.bin_size),
             ));
         }
 

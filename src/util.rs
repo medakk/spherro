@@ -1,11 +1,12 @@
 extern crate web_sys;
 
-use cgmath::{Vector3};
+use cgmath::{Vector2, Vector3};
 
-pub type Vector3f = Vector3<f32>;
+pub type Vector2f = Vector2<f32>;
+pub type Color = Vector3<f32>;
 
-pub fn vec3f_zero() -> Vector3f {
-    Vector3f::new(0.0, 0.0, 0.0)
+pub fn vec2f_zero() -> Vector2f {
+    Vector2f::new(0.0, 0.0)
 }
 
 /*

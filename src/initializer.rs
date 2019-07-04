@@ -17,9 +17,9 @@ pub fn initialize(width: f32, height: f32, strategy: Strategy) -> Vec<Particle> 
                 let x: f32 = rng.gen::<f32>() * width;
                 let y: f32 = rng.gen::<f32>() * height;
 
-                let position = Vector3f::new(x, y, 0.0);
-                let col = Vector3f::new(0.0, 0.0, 1.0);
-                particles.push(Particle::new(position, col, vec3f_zero(), 100.0, 1.0, 1.0));
+                let position = Vector2f::new(x, y);
+                let col = Color::new(0.0, 0.0, 1.0);
+                particles.push(Particle::new(position, col, vec2f_zero(), 100.0, 1.0, 1.0));
             }
 
             particles
@@ -41,9 +41,9 @@ pub fn initialize(width: f32, height: f32, strategy: Strategy) -> Vec<Particle> 
                     let x = (x_spacing * (i + (j % 2)*3)) as f32;
                     let y = (y_spacing * j) as f32;
 
-                    let position = Vector3f::new(x, y, 0.0);
-                    let col = Vector3f::new(0.0, 0.0, 1.0);
-                    particles.push(Particle::new(position, col, vec3f_zero(), 100.0, 1.0, 1.0));
+                    let position = Vector2f::new(x, y);
+                    let col = Color::new(0.0, 0.0, 1.0);
+                    particles.push(Particle::new(position, col, vec2f_zero(), 100.0, 1.0, 1.0));
                 }
             }
 

@@ -1,4 +1,4 @@
-use crate::util::{Vector3f};
+use crate::util::{Vector2f};
 use crate::accelerators::{HasPosition, Accelerator};
 use cgmath::{MetricSpace, InnerSpace};
 
@@ -23,12 +23,12 @@ struct Node {
     children: Vec<Node>,
 }
 
-struct Circle(Vector3f, f32);
-struct Line(Vector3f, Vector3f);
-struct Rect(Vector3f, Vector3f);
+struct Circle(Vector2f, f32);
+struct Line(Vector2f, Vector2f);
+struct Rect(Vector2f, Vector2f);
 
 impl Circle {
-    pub fn contains_pt(&self, point: &Vector3f) -> bool {
+    pub fn contains_pt(&self, point: &Vector2f) -> bool {
         (point - self.0).magnitude2() < self.1.powi(2)
     }
 }
@@ -64,8 +64,8 @@ fn circle_rect_collide(circle: &Circle, rect: &Rect) -> bool {
         return true;
     }
 
-    let p3 = Vector3f::new(rect.1.x, rect.0.y, 0.0);
-    let p4 = Vector3f::new(rect.0.x, rect.1.y, 0.0);
+    let p3 = Vector2f::new(rect.1.x, rect.0.y);
+    let p4 = Vector2f::new(rect.0.x, rect.1.y);
 
     if circle.contains_pt(&rect.0) ||
        circle.contains_pt(&rect.1) ||
@@ -91,8 +91,8 @@ fn circle_rect_collide(circle: &Circle, rect: &Rect) -> bool {
 
 impl<'a, T> Accelerator for Quadtree<'a, T> where T: HasPosition {
     fn nearest_neighbours(&self, i: usize, r: f32) -> Vec<usize> {
-        let tl = Vector3f::new(0.0, 0.0, 0.0);
-        let br = Vector3f::new(self.width, self.height, 0.0);
+        let tl = Vector2f::new(0.0, 0.0);
+        let br = Vector2f::new(self.width, self.height);
 
         self.search_in_node(&self.root, i, r, tl, br)
     }
@@ -100,8 +100,8 @@ impl<'a, T> Accelerator for Quadtree<'a, T> where T: HasPosition {
 
 impl<'a, T> Quadtree<'a, T> where T: HasPosition {
     pub fn new(width: f32, height: f32, items: &'a [T]) -> Self {
-        let tl = Vector3f::new(0.0, 0.0, 0.0);
-        let br = Vector3f::new(width, height, 0.0);
+        let tl = Vector2f::new(0.0, 0.0);
+        let br = Vector2f::new(width, height);
 
         let mut indices: Vec<usize> = Vec::new();
         for i in 0..items.len() {
@@ -117,7 +117,7 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition {
         }
     }
 
-    fn search_in_node(&self, node: &Node, i: usize, r: f32, tl: Vector3f, br: Vector3f) -> Vec<usize> {
+    fn search_in_node(&self, node: &Node, i: usize, r: f32, tl: Vector2f, br: Vector2f) -> Vec<usize> {
         let pos = self.items[i].position();
         let mut v: Vec<usize> = Vec::new();
 
@@ -140,9 +140,9 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition {
         let mid = (tl + br) / 2.0;
 
         let rect0 = Rect(tl, mid);
-        let rect1 = Rect(Vector3f::new(mid.x, tl.y, 0.0), Vector3f::new(br.x, mid.y, 0.0));
+        let rect1 = Rect(Vector2f::new(mid.x, tl.y), Vector2f::new(br.x, mid.y));
         let rect2 = Rect(mid, br);
-        let rect3 = Rect(Vector3f::new(tl.x, mid.y, 0.0), Vector3f::new(mid.x, br.y, 0.0));
+        let rect3 = Rect(Vector2f::new(tl.x, mid.y), Vector2f::new(mid.x, br.y));
         let circle = Circle(pos, r);
 
         for (child, rect) in izip!(node.children.iter(), [rect0, rect1, rect2, rect3].iter()) {
@@ -155,7 +155,7 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition {
         v
     }
 
-    fn construct_node(tl: Vector3f, br: Vector3f, items: &'a [T], indices: &[usize], depth: usize) -> Node {
+    fn construct_node(tl: Vector2f, br: Vector2f, items: &'a [T], indices: &[usize], depth: usize) -> Node {
         if indices.len() < MIN_POINTS || depth == MAX_DEPTH {
             return Node{
                 items: indices.to_vec(),
@@ -191,13 +191,13 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition {
             tl, mid, items, &nw, depth+1
         ));
         children.push(Quadtree::<T>::construct_node(
-            Vector3f::new(mid.x, tl.y, 0.0), Vector3f::new(br.x, mid.y, 0.0), items, &ne, depth+1
+            Vector2f::new(mid.x, tl.y), Vector2f::new(br.x, mid.y), items, &ne, depth+1
         ));
         children.push(Quadtree::<T>::construct_node(
             mid, br, items, &se, depth+1
         ));
         children.push(Quadtree::<T>::construct_node(
-            Vector3f::new(tl.x, mid.y, 0.0), Vector3f::new(mid.x, br.y, 0.0), items, &sw, depth+1
+            Vector2f::new(tl.x, mid.y), Vector2f::new(mid.x, br.y), items, &sw, depth+1
         ));
 
 
@@ -207,15 +207,15 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition {
         }
     }
 
-    pub fn debug_get_splits(&self) -> Vec<(Vector3f, Vector3f)> {
-        let tl = Vector3f::new(0.0, 0.0, 0.0);
-        let br = Vector3f::new(self.width, self.height, 0.0);
+    pub fn debug_get_splits(&self) -> Vec<(Vector2f, Vector2f)> {
+        let tl = Vector2f::new(0.0, 0.0);
+        let br = Vector2f::new(self.width, self.height);
 
         self.debug_node_splits(&self.root, tl, br)
     }
 
-    fn debug_node_splits(&self, node: &Node, tl: Vector3f, br: Vector3f) -> Vec<(Vector3f, Vector3f)> {
-        let mut v: Vec<(Vector3f, Vector3f)> = Vec::new();
+    fn debug_node_splits(&self, node: &Node, tl: Vector2f, br: Vector2f) -> Vec<(Vector2f, Vector2f)> {
+        let mut v: Vec<(Vector2f, Vector2f)> = Vec::new();
 
         if node.children.len() == 0 {
             return v;
@@ -224,14 +224,14 @@ impl<'a, T> Quadtree<'a, T> where T: HasPosition {
         let mid = (tl + br) / 2.0;
 
         // Vertical line
-        v.push((Vector3f::new(mid.x, tl.y, 0.0), Vector3f::new(mid.x, br.y, 0.0)));
+        v.push((Vector2f::new(mid.x, tl.y), Vector2f::new(mid.x, br.y)));
         // Horizontal line
-        v.push((Vector3f::new(tl.x, mid.y, 0.0), Vector3f::new(br.x, mid.y, 0.0)));
+        v.push((Vector2f::new(tl.x, mid.y), Vector2f::new(br.x, mid.y)));
 
         v.extend(self.debug_node_splits(&node.children[0], tl, mid));
-        v.extend(self.debug_node_splits(&node.children[1], Vector3f::new(mid.x, tl.y, 0.0), Vector3f::new(br.x, mid.y, 0.0)));
+        v.extend(self.debug_node_splits(&node.children[1], Vector2f::new(mid.x, tl.y), Vector2f::new(br.x, mid.y)));
         v.extend(self.debug_node_splits(&node.children[2], mid, br));
-        v.extend(self.debug_node_splits(&node.children[3], Vector3f::new(tl.x, mid.y, 0.0), Vector3f::new(mid.x, br.y, 0.0)));
+        v.extend(self.debug_node_splits(&node.children[3], Vector2f::new(tl.x, mid.y), Vector2f::new(mid.x, br.y)));
 
         v
     }

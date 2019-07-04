@@ -1,7 +1,7 @@
-use crate::util::{Vector3f};
+use crate::util::{Vector2f};
 
 pub trait HasPosition {
-    fn position(&self) -> Vector3f;
+    fn position(&self) -> Vector2f;
 }
 
 pub trait Accelerator {
