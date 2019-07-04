@@ -4,7 +4,7 @@ use crate::util::*;
 use crate::particle::{Particle};
 use crate::accelerators::{Accelerator, Grid};
 use crate::initializer;
-use crate::kernel::{Kernel, CubicSpline};
+use crate::kernel::*;
 
 const H: f32 = 30.0;
 const VISC: f32 = 10.0;
@@ -19,21 +19,18 @@ pub struct Universe {
     width: f32,
     height: f32,
     neighbours: Vec<Vec<usize>>,
-    kernel: Box<Kernel>,
 }
 
 #[wasm_bindgen]
 impl Universe {
     pub fn new(width: f32, height: f32, strategy: initializer::Strategy) -> Universe {
         let particles = initializer::initialize(width, height, strategy);
-        let kernel = CubicSpline{};
 
         Universe {
             particles: particles,
             width: width,
             height: height,
             neighbours: Vec::new(),
-            kernel: Box::new(kernel),
         }
     }
 
@@ -76,7 +73,7 @@ impl Universe {
                 let pj = &self.particles[j];
                 let x_ij = pi.pos - pj.pos;
                 let q = x_ij.magnitude() / H;
-                let Wj = (*self.kernel).f(q) / H.powi(3);
+                let Wj = cubicspline_f(q) / H.powi(3);
                 pj.mass * Wj
             }).sum();
 
@@ -128,7 +125,7 @@ impl Universe {
         // Compute gradient of W
         let dWs: Vec<Vector3f> = izip!(&neighbours, &x_ijs).map(|(pj, x_ij)| {
             let q = x_ij.magnitude() / H;
-            let df = (*self.kernel).df(q);
+            let df = cubicspline_df(q);
 
             let dq = (pi.pos - pj.pos) / (H * q); // gradient of q
             let dW = (1.0 / H.powi(3)) * df * dq;
