@@ -28,7 +28,16 @@ const renderLoop = (currentTime) => {
     for(var i=0; i<size; i++) {
         const x = cells[i*stride+0];
         const y = HEIGHT - cells[i*stride+1];
-        const z = cells[i*stride+2];
+
+        const r = cells[i*stride+2];
+        const g = cells[i*stride+3];
+        const b = cells[i*stride+4];
+
+        ctx.fillStyle = 'rgb(' + Math.floor(r*255.0) + ',' +
+                                 Math.floor(g*255.0) + ',' +
+                                 Math.floor(b*255.0) + ')';
+        if(i==0) {
+        }
 
         ctx.beginPath();
         ctx.arc(x, y, 10, 0, 2*Math.PI);
