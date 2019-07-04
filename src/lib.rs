@@ -2,7 +2,6 @@
 #[allow(unused_macros)]
 #[allow(dead_code)]
 
-#[macro_use]
 extern crate itertools;
 
 #[allow(dead_code)]
