@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Karthik Karanth <karanth.karthik@gmail.com>"]
 edition = "2018"
 description = "A SPH fluid simulator"
+repository = "https://github.com/medakk/spherro"
 license = "MIT"
 
 [lib]
@@ -22,11 +23,8 @@ default = ["console_error_panic_hook"]
 
 [dependencies]
 wasm-bindgen = "0.2"
-js-sys = "0.3.24"
 cgmath = "0.17.0"
 itertools = "0.8.0"
-# kiss3d = "0.20.1"
-# nalgebra = "0.18.0"
 rand = "0.7.0"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
@@ -41,6 +39,10 @@ console_error_panic_hook = { version = "0.1.1", optional = true }
 #
 # Unfortunately, `wee_alloc` requires nightly Rust when targeting wasm for now.
 wee_alloc = { version = "0.4.2", optional = true }
+
+[target.'cfg(not(target_arch="wasm32"))'.dependencies]
+kiss3d = "0.20.1"
+nalgebra = "0.18.0"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.2"
