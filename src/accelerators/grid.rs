@@ -18,7 +18,10 @@ impl<'a, T> Accelerator for Grid<'a, T> where T: HasPosition {
     fn nearest_neighbours(&self, i: usize, r: f32) -> Vec<usize> {
         let cols = (self.width / self.bin_size).ceil() as usize;
         let _rows = (self.height / self.bin_size).ceil() as usize;
-        let mut neighbours = Vec::new();
+
+        // We can save some time on allocation by preallocating space.
+        // Maybe also compute this heurestic on the fly after seeing a few samples.
+        let mut neighbours = Vec::with_capacity(24);
 
         let pos = self.items[i].position();
 
