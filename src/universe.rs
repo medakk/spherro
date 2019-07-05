@@ -55,6 +55,14 @@ impl Universe {
     pub fn get_size(&self) -> usize {
         self.particles.len()
     }
+
+    pub fn get_width(&self) -> f32 {
+        self.width
+    }
+
+    pub fn get_height(&self) -> f32 {
+        self.height
+    }
 }
 
 #[allow(non_snake_case)]

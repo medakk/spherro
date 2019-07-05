@@ -1,4 +1,5 @@
 import { Universe, Strategy } from "spherro";
+import { Blob as SpherroBlob } from "spherro";
 import { memory } from "spherro/spherro_bg";
 
 const WIDTH = 700;
@@ -6,12 +7,12 @@ const HEIGHT = 700;
 
 const strategy = Strategy.DAMBREAK
 const universe = Universe.new(WIDTH, HEIGHT, strategy);
+const spherroBlob = SpherroBlob.new(10, 10);
 const size = universe.get_size();
 
 const canvas = document.getElementById('spherro-canvas');
 canvas.width = WIDTH;
 canvas.height = HEIGHT;
-
 const ctx = canvas.getContext('2d');
 
 var lastTime = 0.0;
@@ -20,32 +21,23 @@ const renderLoop = (currentTime) => {
     const dt = currentTime - lastTime;
     lastTime = currentTime;
 
-    const cellsPtr = universe.get_data();
-    const stride = universe.get_data_stride() / 4; // 4 bytes a float. TODO: needs more thought
-    const cells = new Float32Array(memory.buffer, cellsPtr, size * stride);
-
-    ctx.clearRect(0, 0, WIDTH, HEIGHT);
-    for(var i=0; i<size; i++) {
-        const x = cells[i*stride+0];
-        const y = HEIGHT - cells[i*stride+1];
-
-        const r = cells[i*stride+2];
-        const g = cells[i*stride+3];
-        const b = cells[i*stride+4];
-
-        ctx.fillStyle = 'rgb(' + Math.floor(r*255.0) + ',' +
-                                 Math.floor(g*255.0) + ',' +
-                                 Math.floor(b*255.0) + ')';
-        if(i==0) {
-        }
-
-        ctx.beginPath();
-        ctx.arc(x, y, 10, 0, 2*Math.PI);
-        ctx.fill();
-    }
-
     for(var i=0; i<=10; i++) {
         universe.update(0.001);
+    }
+
+    spherroBlob.set_from_universe(universe);
+    const blobPtr = spherroBlob.get_data();
+    const blobArr = new Uint8ClampedArray(memory.buffer, blobPtr, 10*10);
+    for(var y=0; y<10; y++) {
+        for(var x=0; x<10; x++) {
+            var c = blobArr[y*10+x];
+            ctx.fillStyle = 'rgb(' + Math.floor(c) + ',' +
+                                     Math.floor(0) + ',' +
+                                     Math.floor(0) + ')';
+            ctx.beginPath();
+            ctx.arc(100+x*5, 100+y*5, 2, 0, 2*Math.PI);
+            ctx.fill();
+        }
     }
 
     requestAnimationFrame(renderLoop);

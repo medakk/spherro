@@ -8,13 +8,15 @@ extern crate itertools;
 mod accelerators;
 mod particle;
 mod universe;
-pub mod initializer;
 mod kernel;
+mod blob;
+pub mod initializer;
 pub mod util; //TODO: make this private
 
 // Re-export some names for flatter syntax
 pub use particle::Particle;
 pub use universe::{Universe};
+pub use blob::Blob;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
