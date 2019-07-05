@@ -6,11 +6,13 @@ import * as twgl from "twgl.js";
 const WIDTH = 700;
 const HEIGHT = 700;
 const VS_FILE = 'shaders/vs.glsl';
-const FS_FILE = 'shaders/fs_retro.glsl';
+const FS_FILE = 'shaders/fs_blob.glsl';
+const BLOB_WIDTH = 50;
+const BLOB_HEIGHT = 50;
 
 const strategy = Strategy.DAMBREAK;
 const universe = Universe.new(WIDTH, HEIGHT, strategy);
-const spherroBlob = SpherroBlob.new(50, 50);
+const spherroBlob = SpherroBlob.new(BLOB_WIDTH, BLOB_HEIGHT);
 
 const canvas = document.getElementById('spherro-canvas');
 canvas.width = WIDTH;
@@ -38,11 +40,11 @@ function load(vs, fs) {
 
     const texture = twgl.createTexture(gl, {
         mag: gl.NEAREST,
-        min: gl.LINEAR,
+        min: gl.NEAREST,
         format: gl.LUMINANCE,
-        src: new Uint8Array(50*50),
-        width: 50,
-        height: 50,
+        src: new Uint8Array(BLOB_WIDTH*BLOB_HEIGHT),
+        width: BLOB_WIDTH,
+        height: BLOB_HEIGHT,
         wrap: gl.CLAMP_TO_EDGE,
     });
 
@@ -57,16 +59,16 @@ function load(vs, fs) {
 
         spherroBlob.set_from_universe(universe);
         const blobPtr = spherroBlob.get_data();
-        const blobArr = new Uint8Array(memory.buffer, blobPtr, 50*50);
-        const arr = new Uint8Array(50*50);
-        for(var i=0; i<50*50; i++) { arr[i] = blobArr[i]; }
+        const blobArr = new Uint8Array(memory.buffer, blobPtr, BLOB_WIDTH*BLOB_HEIGHT);
+        const arr = new Uint8Array(BLOB_WIDTH*BLOB_HEIGHT);
+        for(var i=0; i<BLOB_WIDTH*BLOB_HEIGHT; i++) { arr[i] = blobArr[i]; }
         twgl.setTextureFromArray(gl, texture, arr, {
             wrap: gl.CLAMP_TO_EDGE,
             mag: gl.NEAREST,
             min: gl.LINEAR,
             format: gl.LUMINANCE,
-            width: 50,
-            height: 50
+            width: BLOB_WIDTH,
+            height: BLOB_HEIGHT
         });
 
         twgl.resizeCanvasToDisplaySize(gl.canvas);
