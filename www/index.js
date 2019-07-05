@@ -7,7 +7,7 @@ const HEIGHT = 700;
 
 const strategy = Strategy.DAMBREAK
 const universe = Universe.new(WIDTH, HEIGHT, strategy);
-const spherroBlob = SpherroBlob.new(10, 10);
+const spherroBlob = SpherroBlob.new(50, 50);
 const size = universe.get_size();
 
 const canvas = document.getElementById('spherro-canvas');
@@ -21,22 +21,25 @@ const renderLoop = (currentTime) => {
     const dt = currentTime - lastTime;
     lastTime = currentTime;
 
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
     for(var i=0; i<=10; i++) {
         universe.update(0.001);
     }
 
     spherroBlob.set_from_universe(universe);
     const blobPtr = spherroBlob.get_data();
-    const blobArr = new Uint8ClampedArray(memory.buffer, blobPtr, 10*10);
-    for(var y=0; y<10; y++) {
-        for(var x=0; x<10; x++) {
-            var c = blobArr[y*10+x];
+    const blobArr = new Uint8ClampedArray(memory.buffer, blobPtr, 50*50);
+    for(var y=0; y<50; y++) {
+        for(var x=0; x<50; x++) {
+            var c = blobArr[y*50+x];
             ctx.fillStyle = 'rgb(' + Math.floor(c) + ',' +
-                                     Math.floor(0) + ',' +
-                                     Math.floor(0) + ')';
+                                    Math.floor(c) + ',' +
+                                    Math.floor(c) + ')';
+
             ctx.beginPath();
-            ctx.arc(100+x*5, 100+y*5, 2, 0, 2*Math.PI);
-            ctx.fill();
+            const y_inv = 50 - y;
+            ctx.fillRect(x*14, y_inv*14, 10, 10);
         }
     }
 
