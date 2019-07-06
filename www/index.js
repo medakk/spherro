@@ -24,23 +24,23 @@ const renderLoop = (currentTime) => {
     const stride = universe.get_data_stride() / 4; // 4 bytes a float. TODO: needs more thought
     const cells = new Float32Array(memory.buffer, cellsPtr, size * stride);
 
+    ctx.fillStyle = '#00';
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
     for(var i=0; i<size; i++) {
         const x = cells[i*stride+0];
         const y = HEIGHT - cells[i*stride+1];
 
-        const r = cells[i*stride+2];
-        const g = cells[i*stride+3];
-        const b = cells[i*stride+4];
+        const r1 = 10;
+        const r2 = 20;
+        var grd = ctx.createRadialGradient(x, y, r1, x, y, r2);
+        grd.addColorStop(0.0, '#0023edff');
+        grd.addColorStop(0.2, '#0023eddd');
+        grd.addColorStop(1.0, '#0023ed22');
+        ctx.globalCompositeOperation = 'lighter';
 
-        ctx.fillStyle = 'rgb(' + Math.floor(r*255.0) + ',' +
-                                 Math.floor(g*255.0) + ',' +
-                                 Math.floor(b*255.0) + ')';
-        if(i==0) {
-        }
-
+        ctx.fillStyle = grd;
         ctx.beginPath();
-        ctx.arc(x, y, 10, 0, 2*Math.PI);
+        ctx.arc(x, y, r2, 0, 2*Math.PI);
         ctx.fill();
     }
 
