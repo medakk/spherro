@@ -5,7 +5,7 @@ const WIDTH = 700;
 const HEIGHT = 700;
 
 const strategy = Strategy.DAMBREAK
-const universe = Universe.new(WIDTH, HEIGHT, strategy);
+var universe = Universe.new(WIDTH, HEIGHT, strategy);
 const size = universe.get_size();
 
 const canvas = document.getElementById('spherro-canvas');
@@ -15,6 +15,7 @@ canvas.height = HEIGHT;
 const ctx = canvas.getContext('2d');
 
 var lastTime = 0.0;
+var shouldReset = false;
 
 const renderLoop = (currentTime) => {
     const dt = currentTime - lastTime;
@@ -48,7 +49,17 @@ const renderLoop = (currentTime) => {
         universe.update(0.001);
     }
 
+    if(shouldReset) {
+        universe = Universe.new(WIDTH, HEIGHT, strategy);
+        shouldReset = false;
+    }
+
     requestAnimationFrame(renderLoop);
 };
-
 requestAnimationFrame(renderLoop);
+
+document.addEventListener('keypress', function(e) {
+    if(e.key == 'r') {
+        shouldReset = true;
+    }
+})
