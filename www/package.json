@@ -27,7 +27,8 @@
   },
   "homepage": "https://github.com/medakk/spherro",
   "dependencies": {
-    "spherro": "file:../pkg"
+    "spherro": "file:../pkg",
+    "twgl.js": "^4.11.0"
   },
   "devDependencies": {
     "webpack": "^4.29.3",
