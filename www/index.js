@@ -16,9 +16,12 @@ const ctx = canvas.getContext('2d');
 
 var lastTime = 0.0;
 var shouldReset = false;
+var dts = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+var dtIdx = 0;
 
 const renderLoop = (currentTime) => {
     const dt = (currentTime - lastTime) / 1000.0;
+    dts[dtIdx] = dt; dtIdx = (dtIdx + 1) % 7;
     lastTime = currentTime;
 
     const cellsPtr = universe.get_data();
@@ -45,8 +48,8 @@ const renderLoop = (currentTime) => {
         ctx.fill();
     }
 
-    for(var i=0; i<=10; i++) {
-        universe.update(0.001);
+    for(var i=0; i<5; i++) {
+        universe.update(0.002);
     }
 
     if(shouldReset) {
@@ -54,10 +57,10 @@ const renderLoop = (currentTime) => {
         shouldReset = false;
     }
 
-    const fps = 1.0 / dt;
+    const fps = 1.0 / (dts.reduce((a, b) => a+b)/7.0);
     ctx.fillStyle = 'red';
     ctx.font = '20px Arial';
-    ctx.fillText(fps.toFixed(2) + ' FPS', 20, 20);
+    ctx.fillText(fps.toFixed(1) + ' FPS', 20, 20);
 
     requestAnimationFrame(renderLoop);
 };

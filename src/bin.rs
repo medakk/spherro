@@ -20,11 +20,11 @@ fn main() {
     const STRATEGY: Strategy = Strategy::DAMBREAK;
     window.set_background_color(0.85, 0.85, 0.85);
 
-    let eye = na::Point3::new(300.0, 300.0, 800.0) * VIZ_SCALE;
-    let look_at = na::Point3::new(300.0, 300.0, 0.0) * VIZ_SCALE;
+    let eye = na::Point3::new(350.0, 350.0, 900.0) * VIZ_SCALE;
+    let look_at = na::Point3::new(350.0, 350.0, 0.0) * VIZ_SCALE;
     let mut first_person = kiss3d::camera::FirstPerson::new(eye, look_at);
 
-    let mut universe = Universe::new(600.0, 600.0, STRATEGY);
+    let mut universe = Universe::new(700.0, 700.0, STRATEGY);
     let mut viz_objs: Vec<kiss3d::scene::SceneNode> = Vec::new();
 
     for _i in 0..universe.get_size() {
@@ -37,17 +37,17 @@ fn main() {
     // Draw some borders
     for i in 0..4 {
         let sx = 10.0 * VIZ_SCALE;
-        let sy = 600.0 * VIZ_SCALE;
+        let sy = 700.0 * VIZ_SCALE;
         let sz = 10.0 * VIZ_SCALE;
 
         let mut c = window.add_cube(sx, sy, sz);
         c.set_color(1.0, 0.0, 0.0);
 
-        let t = na::Translation3::new(0.0, 300.0*VIZ_SCALE, 0.0);
+        let t = na::Translation3::new(0.0, 350.0*VIZ_SCALE, 0.0);
         let r = na::UnitQuaternion::from_euler_angles(
                                     0.0, 0.0, i as f32 * std::f32::consts::PI / 2.0);
-        let ro = na::Translation3::new(300.0*VIZ_SCALE, 300.0*VIZ_SCALE, 0.0); // rotation origin
-        let ro_inv = na::Translation3::new(-300.0*VIZ_SCALE, -300.0*VIZ_SCALE, 0.0);
+        let ro = na::Translation3::new(350.0*VIZ_SCALE, 350.0*VIZ_SCALE, 0.0); // rotation origin
+        let ro_inv = na::Translation3::new(-350.0*VIZ_SCALE, -350.0*VIZ_SCALE, 0.0);
         let transform = ro * r * ro_inv * t;
         c.set_local_transformation(transform);
     }
@@ -77,17 +77,16 @@ fn main() {
         for event in window.events().iter() {
             match event.value {
                 WindowEvent::Key(Key::Space, Action::Press, _) => {
-
                 },
                 WindowEvent::Key(Key::R, Action::Press, _) => {
-                    universe = Universe::new(600.0, 600.0, STRATEGY);
+                    universe = Universe::new(700.0, 700.0, STRATEGY);
                 },
                 _ => {}
             }
         }
 
-        for _ in 0..10 {
-            universe.update(0.001);
+        for _ in 0..5 {
+            universe.update(0.002);
         }
 
         // Debug accelerator
