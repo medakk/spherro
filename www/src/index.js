@@ -11,7 +11,7 @@ export function main() {
     var universe = Universe.new(WIDTH, HEIGHT, strategy);
     const canvas = document.getElementById('spherro-canvas');
     const fpsCounter = new FPSCounter(10);
-    const renderer = new Renderer(canvas, WIDTH, HEIGHT);
+    const renderer = new Renderer(canvas, WIDTH, HEIGHT, universe.get_size());
 
     var shouldReset = false;
 
