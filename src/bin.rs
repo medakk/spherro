@@ -87,6 +87,7 @@ fn main() {
 
         for _ in 0..5 {
             universe.update(0.002);
+            universe.debug_check_nans();
         }
 
         // Debug accelerator

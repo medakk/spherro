@@ -4,13 +4,15 @@
 
 extern crate itertools;
 
+#[macro_use]
+pub mod util; //TODO: make this private
+
 #[allow(dead_code)]
 mod accelerators;
 mod particle;
 mod universe;
 pub mod initializer;
 mod kernel;
-pub mod util; //TODO: make this private
 
 // Re-export some names for flatter syntax
 pub use particle::Particle;

@@ -2,7 +2,7 @@ use crate::util::{Vector2f, Color};
 use crate::accelerators::{HasPosition};
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Particle {
     pub pos: Vector2f,
     // The color is more of a way to debug things than an actual property

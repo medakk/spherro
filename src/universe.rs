@@ -24,6 +24,7 @@ pub struct Universe {
 #[wasm_bindgen]
 impl Universe {
     pub fn new(width: f32, height: f32, strategy: initializer::Strategy) -> Universe {
+        set_panic_hook();
         let particles = initializer::initialize(width, height, strategy);
 
         Universe {
@@ -176,16 +177,32 @@ impl Universe {
 // All debug functions
 impl Universe {
     pub fn debug_update(&mut self, _dt: f32) {
+        const CHOSEN_IDX: usize = 247;
+
         let accel = Grid::new(self.width, self.height, H, &self.particles);
-        let neighbours = self.get_neighbour_indices(0, &accel);
-        self.particles[0].col = Color::new(0.0, 0.0, 0.0);
+        let neighbours = accel.nearest_neighbours(CHOSEN_IDX, H*2.0);
+        self.particles[CHOSEN_IDX].col = Color::new(0.0, 0.0, 0.0);
         for j in neighbours.into_iter() {
             self.particles[j].col = Color::new(1.0, 1.0, 0.0);
         }
     }
-    
-    fn get_neighbour_indices(&self, i: usize, accel: &Accelerator) -> Vec<usize> {
-        accel.nearest_neighbours(i, H*2.0)
+
+    pub fn debug_check_nans(&self) {
+        let mut is_bad = false;
+        for (i, pi) in self.particles.iter().enumerate() {
+            if !pi.pos.x.is_finite() || !pi.pos.y.is_finite() {
+
+                let accel = Grid::new(self.width, self.height, H, &self.particles);
+                let neighbours = accel.nearest_neighbours(i, H*2.0);
+
+                println!("Found bad particle with idx {}: {:?}\nNeighbour count: {}", i, pi, neighbours.len());
+                is_bad = true;
+            }
+        }
+
+        if is_bad {
+            panic!();
+        }
     }
 
     pub fn debug_splits(&self) -> Vec<(Vector2f, Vector2f)> {
