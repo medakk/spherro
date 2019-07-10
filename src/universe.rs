@@ -6,7 +6,7 @@ use crate::accelerators::{Accelerator, Grid};
 use crate::initializer;
 use crate::kernel::*;
 
-const H: f32 = 30.0;
+const H: f32 = 35.0;
 const VISC: f32 = 10.0;
 const REST_RHO: f32 = 1.0 / (5.0 * 5.0 * 5.0);
 const BOUNCE_MIN_DV: f32 = 500.0;
