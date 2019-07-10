@@ -30,6 +30,8 @@ const renderLoop = (currentTime) => {
 
     ctx.fillStyle = '#00';
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
+    ctx.globalCompositeOperation = 'lighter';
+
     for(var i=0; i<size; i++) {
         const x = cells[i*stride+0];
         const y = HEIGHT - cells[i*stride+1];
@@ -40,9 +42,8 @@ const renderLoop = (currentTime) => {
         grd.addColorStop(0.0, '#0023edff');
         grd.addColorStop(0.2, '#0023eddd');
         grd.addColorStop(1.0, '#0023ed22');
-        ctx.globalCompositeOperation = 'lighter';
-
         ctx.fillStyle = grd;
+
         ctx.beginPath();
         ctx.arc(x, y, r2, 0, 2*Math.PI);
         ctx.fill();
