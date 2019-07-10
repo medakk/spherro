@@ -7,20 +7,17 @@ export function main() {
     const WIDTH = 700;
     const HEIGHT = 700;
 
-    const strategy = Strategy.DAMBREAK
+    const strategy = Strategy.DAMBREAK;
     var universe = Universe.new(WIDTH, HEIGHT, strategy);
-
     const canvas = document.getElementById('spherro-canvas');
-    canvas.width = WIDTH;
-    canvas.height = HEIGHT;
-
-    const renderer = new Renderer(canvas, WIDTH, HEIGHT);
     const fpsCounter = new FPSCounter(10);
+    const renderer = new Renderer(canvas, WIDTH, HEIGHT);
 
     var shouldReset = false;
+
     const renderLoop = (currentTime) => {
         fpsCounter.register(currentTime);
-        renderer.draw(universe);
+        renderer.draw(universe, currentTime);
 
         for(var i=0; i<5; i++) {
             universe.update(0.002);
@@ -32,7 +29,7 @@ export function main() {
         }
 
         const fps = fpsCounter.smoothFPS();
-        renderer.draw_fps(fps);
+        document.getElementById('fps').innerText = fps.toFixed(2) + ' FPS';
 
         requestAnimationFrame(renderLoop);
     };

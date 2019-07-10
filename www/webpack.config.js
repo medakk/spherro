@@ -11,4 +11,12 @@ module.exports = {
   plugins: [
     new CopyWebpackPlugin(['index.html'])
   ],
+  module: {
+    rules: [
+          {
+            test: /\.glsl$/i,
+            use: 'raw-loader',
+          },
+        ],
+  }
 };
