@@ -9,8 +9,13 @@ const PARTICLE_SIZE = 60.0;
 
 export default class Renderer {
     constructor(canvas, width, height, particleCount) {
-        this.width = canvas.width = width;
-        this.height = canvas.height = height;
+        this.width   = width;
+        this.height  = height;
+
+        // Change the fraction to render to a lower resolution
+        canvas.width = width / 1;
+        canvas.height = height / 1;
+
         this.gl = canvas.getContext('webgl');
 
         this.init(this.gl, particleCount);
@@ -25,13 +30,14 @@ export default class Renderer {
         }
 
         gl.enable(gl.BLEND);
-        // gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA,
-        //                      gl.ONE, gl.ONE_MINUS_SRC_ALPHA); // Stock blending function
-        gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE,
-                             gl.ONE, gl.ONE);
-        gl.clearColor(0,0,0,0);
+        gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA,
+                             gl.ONE, gl.ONE_MINUS_SRC_ALPHA); // Stock blending function
+        // gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE,
+        //                      gl.ONE, gl.ONE);
+        gl.clearColor(0,0,0,1);
 
         const programInfo = twgl.createProgramInfo(gl, [VERTEX_SHADER, FRAGMENT_SHADER]);
+        const buffer = new Float32Array(particleCount*4);
         const quad = {
             position: [-0.5, -0.5, 0,
                        +0.5, -0.5, 0,
@@ -44,7 +50,16 @@ export default class Renderer {
             indices:  [0, 1, 2, 1, 3, 2],
             instancePosition: {
                 numComponents: 2,
-                data: new Float32Array(particleCount*2),
+                data: buffer,
+                stride: 16,
+                offset: 0,
+                divisor: 1,
+            },
+            instanceVelocity: {
+                numComponents: 2,
+                data: buffer,
+                stride: 16,
+                offset: 8,
                 divisor: 1,
             },
         };
@@ -62,22 +77,23 @@ export default class Renderer {
 
     draw(universe, currentTime) {
         const gl = this.gl;
-        const cellsPtr = universe.get_data();
         const size = universe.get_size();
         const stride = universe.get_data_stride() / 4; // 4 bytes a float. TODO: needs more thought
-        const cells = new Float32Array(memory.buffer, cellsPtr, size * stride);
+        const particlesPtr = universe.get_data();
+        const particles = new Float32Array(memory.buffer, particlesPtr, size * stride);
 
-        //TODO: Get a position buffer from rust
-        const cellPositions = new Float32Array(size*2);
+        //TODO: Get the buffer from rust?
+        const particleBuf = new Float32Array(size*4);
         for(var i=0; i<size; i++) {
-            cellPositions[i*2+0] = cells[i*stride + 0];
-            cellPositions[i*2+1] = cells[i*stride + 1];
+            particleBuf[i*4 + 0] = particles[i*stride + 0];
+            particleBuf[i*4 + 1] = particles[i*stride + 1];
+            particleBuf[i*4 + 2] = particles[i*stride + 2];
+            particleBuf[i*4 + 3] = particles[i*stride + 3];
         }
 
         const {programInfo, bufferInfo, vertexArrayInfo, viewProjection} = this.glInfo;
 
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
         const uniforms = {
             u_particleSize: PARTICLE_SIZE,
             u_time: currentTime * 0.001,
@@ -90,11 +106,11 @@ export default class Renderer {
         twgl.setUniforms(programInfo, uniforms);
 
         //TODO: Understand vertex arrays and their performance implications
-        const vao = vertexArrayInfo.vao;
+        const vao = vertexArrayInfo.vertexArrayObject;
         gl.bindVertexArray(vao);
-            gl.bufferSubData(gl.ARRAY_BUFFER, 0, cellPositions);
+            gl.bufferSubData(gl.ARRAY_BUFFER, 0, particleBuf);
         gl.bindVertexArray(null);
 
-        twgl.drawBufferInfo(gl, vertexArrayInfo, gl.TRIANGLES, vertexArrayInfo.numelements, 0, size);
+        twgl.drawBufferInfo(gl, vertexArrayInfo, gl.TRIANGLES, vertexArrayInfo.numElements, 0, size);
     }
 }
