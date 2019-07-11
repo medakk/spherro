@@ -13,12 +13,14 @@ mod particle;
 mod universe;
 mod kernel;
 mod fetcher;
+mod force;
 pub mod initializer;
 
 // Re-export some names for flatter syntax
 pub use particle::Particle;
-pub use universe::{Universe};
-pub use fetcher::{Fetcher};
+pub use universe::Universe;
+pub use fetcher::Fetcher;
+pub use force::Force;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.

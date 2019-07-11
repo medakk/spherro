@@ -5,6 +5,7 @@ use crate::particle::{Particle};
 use crate::accelerators::{Accelerator, Grid};
 use crate::initializer;
 use crate::kernel::*;
+use crate::force::Force;
 
 const H: f32 = 35.0;
 const VISC: f32 = 10.0;
@@ -18,35 +19,56 @@ pub struct Universe {
     particles: Vec<Particle>,
     width: f32,
     height: f32,
-    neighbours: Vec<Vec<usize>>,
+
+    forces: Vec<Force>,
 }
+
+type Neighbours = Vec<Vec<usize>>;
 
 #[wasm_bindgen]
 impl Universe {
     pub fn new(width: f32, height: f32, strategy: initializer::Strategy) -> Universe {
-        set_panic_hook();
+        if cfg!(target_arch="wasm32") {
+            set_panic_hook();
+        }
+
         let particles = initializer::initialize(width, height, strategy);
 
         Universe {
             particles: particles,
             width: width,
             height: height,
-            neighbours: Vec::new(),
+            forces: Vec::new(),
         }
     }
 
     pub fn update(&mut self, dt: f32) {
         let accel = Grid::new(self.width, self.height, H, &self.particles);
-        self.neighbours = (0..self.particles.len()).map(|i| {
+
+        let neighbours = (0..self.particles.len()).map(|i| {
             accel.nearest_by_idx(i, H*2.0)
         }).collect();
 
-        self.particles = self.updated_particle_fields(dt);
-        self.particles = self.updated_particle_positions(dt);
+        let force_neighbours = self.forces.iter().map(|f| {
+            accel.nearest_by_pos(f.pos(), f.r)
+        }).collect();
+
+        //TODO: Do all these updates in-place
+        self.particles = self.updated_particle_fields(&neighbours, dt);
+        self.particles = self.updated_particle_positions(&neighbours, dt);
+        self.particles = self.apply_forces(&force_neighbours, dt);
     }
 
     pub fn get_size(&self) -> usize {
         self.particles.len()
+    }
+
+    pub fn add_force(&mut self, force: Force) {
+        self.forces.push(force);
+    }
+
+    pub fn clear_forces(&mut self) {
+        self.forces.clear();
     }
 }
 
@@ -57,12 +79,12 @@ impl Universe {
         &self.particles
     }
 
-    fn updated_particle_fields(&self, _dt: f32) -> Vec<Particle> {
+    fn updated_particle_fields(&self, neighbours: &Neighbours, _dt: f32) -> Vec<Particle> {
         const COL_BLUE: Color = Color::new(0.0, 0.0, 1.0);
         const COL_RED: Color = Color::new(1.0, 0.0, 0.0);
 
         self.particles.iter().enumerate().map(|(i, pi)| {
-            let rho: f32 = self.neighbours[i].iter().map(|&j| {
+            let rho: f32 = neighbours[i].iter().map(|&j| {
                 let pj = &self.particles[j];
                 let x_ij = pi.pos - pj.pos;
                 let q = x_ij.magnitude() / H;
@@ -82,9 +104,9 @@ impl Universe {
         }).collect()
     }
 
-    fn updated_particle_positions(&self, dt: f32) -> Vec<Particle> {
+    fn updated_particle_positions(&self, neighbours: &Neighbours, dt: f32) -> Vec<Particle> {
         self.particles.iter().enumerate().map(|(i, pi)| {
-            let neighbours: Vec<&Particle> = self.neighbours[i]
+            let neighbours: Vec<&Particle> = neighbours[i]
                                              .iter()
                                              .map(|&j| { &self.particles[j] })
                                              .collect();
@@ -107,6 +129,26 @@ impl Universe {
                 ..*pi
             }
         }).collect()
+    }
+
+    fn apply_forces(&self, force_neighbours: &Neighbours, dt: f32) -> Vec<Particle> {
+        let mut new_particles = self.particles.clone();
+        for (force, neighbours) in izip!(self.forces.iter(), force_neighbours.iter()) {
+            for j in neighbours.iter() {
+                let pj = &new_particles[*j];
+                let dir = (pj.pos - force.pos()).normalize();
+                let dist2 = (pj.pos - force.pos()).magnitude2();
+                let dv = dir * force.power / dist2;
+
+                let vel = pj.vel + dv * dt;
+                let pos = pj.pos + vel * dt;
+
+                new_particles[*j].vel = vel;
+                new_particles[*j].pos = pos;
+            }
+        }
+
+        new_particles
     }
 
     fn compute_dv(&self, pi: &Particle, neighbours: Vec<&Particle>) -> Vector2f {
@@ -169,11 +211,21 @@ impl Universe {
 // All debug functions
 impl Universe {
     pub fn debug_update(&mut self, _dt: f32) {
+        /*
         const CHOSEN_IDX: usize = 247;
-
         let accel = Grid::new(self.width, self.height, H, &self.particles);
         let neighbours = accel.nearest_by_idx(CHOSEN_IDX, H*2.0);
         self.particles[CHOSEN_IDX].col = Color::new(0.0, 0.0, 0.0);
+        for j in neighbours.into_iter() {
+            self.particles[j].col = Color::new(1.0, 1.0, 0.0);
+        }
+        */
+        if self.forces.len() == 0 {
+            return;
+        }
+        let accel = Grid::new(self.width, self.height, H, &self.particles);
+        let force = &self.forces[0];
+        let neighbours = accel.nearest_by_pos(force.pos(), force.r);
         for j in neighbours.into_iter() {
             self.particles[j].col = Color::new(1.0, 1.0, 0.0);
         }

@@ -10,7 +10,7 @@ use kiss3d::window::Window;
 use kiss3d::event::{WindowEvent, Key, Action};
 use kiss3d::light::Light;
 use kiss3d::text::{Font};
-use spherro::{Universe};
+use spherro::{Universe, Force};
 use spherro::initializer::Strategy;
 
 const VIZ_SCALE: f32 = 0.001;
@@ -25,6 +25,9 @@ fn main() {
     let mut first_person = kiss3d::camera::FirstPerson::new(eye, look_at);
 
     let mut universe = Universe::new(700.0, 700.0, STRATEGY);
+    let force = Force::new(350.0, 100.0, 2e8, 100.0);
+    universe.add_force(force);
+
     let mut viz_objs: Vec<kiss3d::scene::SceneNode> = Vec::new();
 
     for _i in 0..universe.get_size() {
@@ -80,6 +83,8 @@ fn main() {
                 },
                 WindowEvent::Key(Key::R, Action::Press, _) => {
                     universe = Universe::new(700.0, 700.0, STRATEGY);
+                    let force = Force::new(350.0, 100.0, 2e8, 100.0);
+                    universe.add_force(force);
                 },
                 _ => {}
             }
