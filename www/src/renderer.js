@@ -75,7 +75,7 @@ export default class Renderer {
             bufferInfo,
             viewProjection,
             vertexArrayInfo,
-            buffer: buffer,
+            buffer,
         };
     }
 
