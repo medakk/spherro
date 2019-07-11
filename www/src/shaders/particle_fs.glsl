@@ -19,6 +19,4 @@ void main() {
     vec4 c2 = vec4(0.1, 0.56, 0.7, 0.0);
 
     gl_FragColor = mix(c1, c2, t);
-    gl_FragColor.r = v_vel.x;
-    gl_FragColor.g = v_vel.y;
 }

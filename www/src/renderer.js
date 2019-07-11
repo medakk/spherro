@@ -30,14 +30,17 @@ export default class Renderer {
         }
 
         gl.enable(gl.BLEND);
-        gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA,
-                             gl.ONE, gl.ONE_MINUS_SRC_ALPHA); // Stock blending function
-        // gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE,
-        //                      gl.ONE, gl.ONE);
-        gl.clearColor(0,0,0,1);
+        // gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA,
+        //                      gl.ONE, gl.ONE_MINUS_SRC_ALPHA); // Stock blending function
+        gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE,
+                             gl.ONE, gl.ONE);
+        gl.clearColor(0,0,0,0);
 
         const programInfo = twgl.createProgramInfo(gl, [VERTEX_SHADER, FRAGMENT_SHADER]);
-        const buffer = new Float32Array(particleCount*4);
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, particleCount*4*4, gl.DYNAMIC_DRAW);
+
         const quad = {
             position: [-0.5, -0.5, 0,
                        +0.5, -0.5, 0,
@@ -50,14 +53,14 @@ export default class Renderer {
             indices:  [0, 1, 2, 1, 3, 2],
             instancePosition: {
                 numComponents: 2,
-                data: buffer,
+                buffer: buffer,
                 stride: 16,
                 offset: 0,
                 divisor: 1,
             },
             instanceVelocity: {
                 numComponents: 2,
-                data: buffer,
+                buffer: buffer,
                 stride: 16,
                 offset: 8,
                 divisor: 1,
@@ -68,10 +71,11 @@ export default class Renderer {
         const vertexArrayInfo = twgl.createVertexArrayInfo(gl, programInfo, bufferInfo);
 
         this.glInfo = {
-            programInfo: programInfo,
-            bufferInfo: bufferInfo,
-            viewProjection: viewProjection,
-            vertexArrayInfo: vertexArrayInfo,
+            programInfo,
+            bufferInfo,
+            viewProjection,
+            vertexArrayInfo,
+            buffer: buffer,
         };
     }
 
@@ -91,7 +95,7 @@ export default class Renderer {
             particleBuf[i*4 + 3] = particles[i*stride + 3];
         }
 
-        const {programInfo, bufferInfo, vertexArrayInfo, viewProjection} = this.glInfo;
+        const {programInfo, bufferInfo, vertexArrayInfo, viewProjection, buffer} = this.glInfo;
 
         gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
         const uniforms = {
@@ -106,10 +110,10 @@ export default class Renderer {
         twgl.setUniforms(programInfo, uniforms);
 
         //TODO: Understand vertex arrays and their performance implications
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, particleBuf);
         const vao = vertexArrayInfo.vertexArrayObject;
         gl.bindVertexArray(vao);
-            gl.bufferSubData(gl.ARRAY_BUFFER, 0, particleBuf);
-        gl.bindVertexArray(null);
 
         twgl.drawBufferInfo(gl, vertexArrayInfo, gl.TRIANGLES, vertexArrayInfo.numElements, 0, size);
     }
