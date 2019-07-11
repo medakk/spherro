@@ -27,6 +27,12 @@ npm run start
 
 This will start a server(defaults to http://localhost:8080) serving spherro.
 
+## Debugging
+
+Running `cargo run --bin spherro-bin --release` starts a [kiss3d](https://docs.rs/kiss3d/0.20.1/kiss3d/)-based viewer that can be used to debug the simulator without going through the browser.
+
+Running `cargo bench` starts a headless dambreak simulation with a fixed time step. This can be used to test performance changes.
+
 ## License
 
 [MIT License](LICENSE)
