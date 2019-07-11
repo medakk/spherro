@@ -5,7 +5,7 @@ import { memory } from "spherro/spherro_bg";
 import VERTEX_SHADER from './shaders/particle_vs.glsl';
 import FRAGMENT_SHADER from './shaders/particle_fs.glsl';
 
-const PARTICLE_SIZE = 60.0;
+const PARTICLE_SIZE = 100.0;
 
 export default class Renderer {
     constructor(canvas, width, height, particleCount) {
