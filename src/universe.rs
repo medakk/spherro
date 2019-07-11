@@ -45,14 +45,6 @@ impl Universe {
         self.particles = self.updated_particle_positions(dt);
     }
 
-    pub fn get_data_stride(&self) -> usize {
-        std::mem::size_of::<Particle>()
-    }
-
-    pub fn get_data(&self) -> *const Particle {
-        self.particles.as_ptr()
-    }
-
     pub fn get_size(&self) -> usize {
         self.particles.len()
     }

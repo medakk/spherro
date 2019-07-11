@@ -1,5 +1,6 @@
 import * as twgl from "twgl.js";
 
+import { Fetcher } from "spherro";
 import { memory } from "spherro/spherro_bg";
 
 import VERTEX_SHADER from './shaders/particle_vs.glsl';
@@ -17,6 +18,7 @@ export default class Renderer {
         canvas.height = height / 1;
 
         this.gl = canvas.getContext('webgl');
+        this.fetcher = Fetcher.new();
 
         this.init(this.gl, particleCount);
     }
@@ -82,18 +84,9 @@ export default class Renderer {
     draw(universe, currentTime) {
         const gl = this.gl;
         const size = universe.get_size();
-        const stride = universe.get_data_stride() / 4; // 4 bytes a float. TODO: needs more thought
-        const particlesPtr = universe.get_data();
-        const particles = new Float32Array(memory.buffer, particlesPtr, size * stride);
-
-        //TODO: Get the buffer from rust?
-        const particleBuf = new Float32Array(size*4);
-        for(var i=0; i<size; i++) {
-            particleBuf[i*4 + 0] = particles[i*stride + 0];
-            particleBuf[i*4 + 1] = particles[i*stride + 1];
-            particleBuf[i*4 + 2] = particles[i*stride + 2];
-            particleBuf[i*4 + 3] = particles[i*stride + 3];
-        }
+        const stride = this.fetcher.stride();
+        const particlesPtr = this.fetcher.fetch(universe);
+        const particleBuf = new Float32Array(memory.buffer, particlesPtr, size * stride);
 
         const {programInfo, bufferInfo, vertexArrayInfo, viewProjection, buffer} = this.glInfo;
 
