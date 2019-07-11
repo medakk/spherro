@@ -14,8 +14,10 @@ struct Cell {
     items: Vec<usize>,
 }
 
+//TODO: Refactor and reuse common code between nearest_by_idx and
+// nearest_by_pos
 impl<'a, T> Accelerator for Grid<'a, T> where T: HasPosition {
-    fn nearest_neighbours(&self, i: usize, r: f32) -> Vec<usize> {
+    fn nearest_by_idx(&self, i: usize, r: f32) -> Vec<usize> {
         let cols = (self.width / self.bin_size).ceil() as usize;
         let _rows = (self.height / self.bin_size).ceil() as usize;
 
@@ -42,6 +44,40 @@ impl<'a, T> Accelerator for Grid<'a, T> where T: HasPosition {
                     if *j == i {
                         continue;
                     }
+                    let pos_j = self.items[*j].position();
+
+                    if (pos - pos_j).magnitude2() < r*r {
+                        neighbours.push(*j);
+                    }
+                }
+            }
+        }
+
+        neighbours
+    }
+
+    fn nearest_by_pos(&self, pos: Vector2f, r: f32) -> Vec<usize> {
+        let cols = (self.width / self.bin_size).ceil() as usize;
+        let _rows = (self.height / self.bin_size).ceil() as usize;
+
+        // We can save some time on allocation by preallocating space.
+        // Maybe also compute this heurestic on the fly after seeing a few samples.
+        let mut neighbours = Vec::with_capacity(24);
+
+        let x0 = clamp_f32(pos.x - r, 0.0, self.width  as f32 - 1e-2);
+        let x1 = clamp_f32(pos.x + r, 0.0, self.width  as f32 - 1e-2);
+        let y0 = clamp_f32(pos.y - r, 0.0, self.height as f32 - 1e-2);
+        let y1 = clamp_f32(pos.y + r, 0.0, self.height as f32 - 1e-2);
+
+        let x0 = (x0 / self.bin_size).floor() as usize;
+        let x1 = (x1 / self.bin_size).floor() as usize;
+        let y0 = (y0 / self.bin_size).floor() as usize;
+        let y1 = (y1 / self.bin_size).floor() as usize;
+
+        for x in x0..x1+1 {
+            for y in y0..y1+1 {
+                let idx = y * cols + x;
+                for j in self.cells[idx].items.iter() {
                     let pos_j = self.items[*j].position();
 
                     if (pos - pos_j).magnitude2() < r*r {

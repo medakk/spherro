@@ -38,7 +38,7 @@ impl Universe {
     pub fn update(&mut self, dt: f32) {
         let accel = Grid::new(self.width, self.height, H, &self.particles);
         self.neighbours = (0..self.particles.len()).map(|i| {
-            accel.nearest_neighbours(i, H*2.0)
+            accel.nearest_by_idx(i, H*2.0)
         }).collect();
 
         self.particles = self.updated_particle_fields(dt);
@@ -172,7 +172,7 @@ impl Universe {
         const CHOSEN_IDX: usize = 247;
 
         let accel = Grid::new(self.width, self.height, H, &self.particles);
-        let neighbours = accel.nearest_neighbours(CHOSEN_IDX, H*2.0);
+        let neighbours = accel.nearest_by_idx(CHOSEN_IDX, H*2.0);
         self.particles[CHOSEN_IDX].col = Color::new(0.0, 0.0, 0.0);
         for j in neighbours.into_iter() {
             self.particles[j].col = Color::new(1.0, 1.0, 0.0);
@@ -185,7 +185,7 @@ impl Universe {
             if !pi.pos.x.is_finite() || !pi.pos.y.is_finite() {
 
                 let accel = Grid::new(self.width, self.height, H, &self.particles);
-                let neighbours = accel.nearest_neighbours(i, H*2.0);
+                let neighbours = accel.nearest_by_idx(i, H*2.0);
 
                 println!("Found bad particle with idx {}: {:?}\nNeighbour count: {}", i, pi, neighbours.len());
                 is_bad = true;
