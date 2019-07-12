@@ -62,10 +62,30 @@ canvas.addEventListener('mousemove', function(e) {
     mouseY = pos.y;
 })
 
-canvas.addEventListener('mousedown', function(e) {
+document.addEventListener('mousedown', function(e) {
+    isMousedown = true;
+    const pos = getCursorPosition(canvas, e);
+    mouseX = pos.x;
+    mouseY = pos.y;
+})
+
+document.addEventListener('mouseup', function(e) {
+    isMousedown = false;
+})
+
+canvas.addEventListener('touchmove', function(e) {
+    const pos = getCursorPosition(canvas, e.changedTouches[0]);
+    mouseX = pos.x;
+    mouseY = pos.y;
+})
+
+document.addEventListener('touchstart', function(e) {
+    const pos = getCursorPosition(canvas, e.changedTouches[0]);
+    mouseX = pos.x;
+    mouseY = pos.y;
     isMousedown = true;
 })
 
-canvas.addEventListener('mouseup', function(e) {
+document.addEventListener('touchend', function(e) {
     isMousedown = false;
 })
