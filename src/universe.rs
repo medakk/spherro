@@ -236,15 +236,15 @@ impl Universe {
         }
     }
 
-    pub fn debug_check_nans(&self) {
+    pub fn debug_check_nans(&self, old_particles: &Vec<Particle>) {
         let mut is_bad = false;
         for (i, pi) in self.particles.iter().enumerate() {
             if !pi.pos.x.is_finite() || !pi.pos.y.is_finite() {
+                println!("Found bad particle with idx {}: {:?}", i, pi);
 
-                let accel = Grid::new(self.width, self.height, H, &self.particles);
+                let accel = Grid::new(self.width, self.height, H, old_particles);
                 let neighbours = accel.nearest_by_idx(i, H*2.0);
-
-                println!("Found bad particle with idx {}: {:?}\nNeighbour count: {}", i, pi, neighbours.len());
+                println!("Previous frame: {:?}\nNeighbours:{}", old_particles[i], neighbours.len());
                 is_bad = true;
             }
         }

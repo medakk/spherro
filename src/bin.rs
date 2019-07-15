@@ -90,9 +90,10 @@ fn main() {
             }
         }
 
-        for _ in 0..5 {
-            universe.update(0.002);
-            universe.debug_check_nans();
+        for _ in 0..10 {
+            let old_particles = universe.get_particles().clone();
+            universe.update(0.001);
+            universe.debug_check_nans(&old_particles);
         }
 
         // Debug accelerator
