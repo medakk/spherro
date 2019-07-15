@@ -15,15 +15,38 @@ struct Cell {
 }
 
 impl<'a, T> Accelerator for Grid<'a, T> where T: HasPosition {
-    fn nearest_neighbours(&self, i: usize, r: f32) -> Vec<usize> {
+    fn nearest_by_idx(&self, i: usize, r: f32) -> Vec<usize> {
+        let pos = self.items[i].position();
+        self.nearest(pos, r, Some(i))
+    }
+
+    fn nearest_by_pos(&self, pos: Vector2f, r: f32) -> Vec<usize> {
+        self.nearest(pos, r, None)
+    }
+}
+
+impl<'a, T> Grid<'a, T> where T: HasPosition {
+    pub fn new(width: f32, height: f32, bin_size: f32, items: &'a [T]) -> Self {
+        let cells = Grid::<T>::construct_grid(width, height, bin_size, items);
+
+        Grid{
+            width: width,
+            height: height,
+            bin_size: bin_size,
+            cells: cells,
+            items: items,
+        }
+    }
+
+    // Returns the indices of the nearest items around pos within a radius of
+    // `r`. If `filter_idx` is provided, that item is excluded in the returned indices
+    fn nearest(&self, pos: Vector2f, r: f32, filter_idx: Option<usize>) -> Vec<usize> {
         let cols = (self.width / self.bin_size).ceil() as usize;
         let _rows = (self.height / self.bin_size).ceil() as usize;
 
-        // We can save some time on allocation by preallocating space.
+        // We save some time on allocation by preallocating space.
         // Maybe also compute this heurestic on the fly after seeing a few samples.
         let mut neighbours = Vec::with_capacity(24);
-
-        let pos = self.items[i].position();
 
         let x0 = clamp_f32(pos.x - r, 0.0, self.width  as f32 - 1e-2);
         let x1 = clamp_f32(pos.x + r, 0.0, self.width  as f32 - 1e-2);
@@ -39,33 +62,23 @@ impl<'a, T> Accelerator for Grid<'a, T> where T: HasPosition {
             for y in y0..y1+1 {
                 let idx = y * cols + x;
                 for j in self.cells[idx].items.iter() {
-                    if *j == i {
-                        continue;
-                    }
-                    let pos_j = self.items[*j].position();
+                    let j = *j;
+
+                    match filter_idx {
+                        Some(i) if j == i => continue,
+                        _ => {}
+                    };
+
+                    let pos_j = self.items[j].position();
 
                     if (pos - pos_j).magnitude2() < r*r {
-                        neighbours.push(*j);
+                        neighbours.push(j);
                     }
                 }
             }
         }
 
         neighbours
-    }
-}
-
-impl<'a, T> Grid<'a, T> where T: HasPosition {
-    pub fn new(width: f32, height: f32, bin_size: f32, items: &'a [T]) -> Self {
-        let cells = Grid::<T>::construct_grid(width, height, bin_size, items);
-
-        Grid{
-            width: width,
-            height: height,
-            bin_size: bin_size,
-            cells: cells,
-            items: items,
-        }
     }
 
     fn construct_grid(width: f32, height: f32, bin_size: f32, items: &'a [T]) -> Vec<Cell> {
