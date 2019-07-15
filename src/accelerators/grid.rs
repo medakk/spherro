@@ -39,7 +39,7 @@ impl<'a, T> Grid<'a, T> where T: HasPosition {
     }
 
     // Returns the indices of the nearest items around pos within a radius of
-    // `r`. If filter_idx is provided, that item is excluded in the returned Vec
+    // `r`. If `filter_idx` is provided, that item is excluded in the returned indices
     fn nearest(&self, pos: Vector2f, r: f32, filter_idx: Option<usize>) -> Vec<usize> {
         let cols = (self.width / self.bin_size).ceil() as usize;
         let _rows = (self.height / self.bin_size).ceil() as usize;
