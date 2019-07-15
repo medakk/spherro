@@ -53,10 +53,10 @@ impl Universe {
             accel.nearest_by_pos(f.pos(), f.r)
         }).collect();
 
-        //TODO: Do all these updates in-place
-        self.particles = self.updated_particle_fields(&neighbours, dt);
-        self.particles = self.updated_particle_positions(&neighbours, dt);
-        self.particles = self.apply_forces(&force_neighbours, dt);
+        self.update_particle_fields(&neighbours, dt);
+        self.update_navierstokes_dv(&neighbours, dt);
+        self.update_forces_dv(&force_neighbours, dt);
+        self.update_integrate(dt);
     }
 
     pub fn get_size(&self) -> usize {
@@ -79,11 +79,12 @@ impl Universe {
         &self.particles
     }
 
-    fn updated_particle_fields(&self, neighbours: &Neighbours, _dt: f32) -> Vec<Particle> {
+    fn update_particle_fields(&mut self, neighbours: &Neighbours, _dt: f32) {
         const COL_BLUE: Color = Color::new(0.0, 0.0, 1.0);
         const COL_RED: Color = Color::new(1.0, 0.0, 0.0);
 
-        self.particles.iter().enumerate().map(|(i, pi)| {
+        for i in 0..self.particles.len() {
+            let pi = &self.particles[i];
             let rho: f32 = neighbours[i].iter().map(|&j| {
                 let pj = &self.particles[j];
                 let x_ij = pi.pos - pj.pos;
@@ -95,17 +96,16 @@ impl Universe {
             let pressure = K * ((rho / REST_RHO).powi(7) - 1.0);
             let col = COL_BLUE.lerp(COL_RED, rho / REST_RHO);
 
-            Particle{
-                col: col,
-                rho: rho,
-                pressure: pressure,
-                ..*pi
-            }
-        }).collect()
+            self.particles[i].col = col;
+            self.particles[i].rho = rho;
+            self.particles[i].pressure = pressure;
+            self.particles[i].dv = vec2f_zero();
+        }
     }
 
-    fn updated_particle_positions(&self, neighbours: &Neighbours, dt: f32) -> Vec<Particle> {
-        self.particles.iter().enumerate().map(|(i, pi)| {
+    fn update_navierstokes_dv(&mut self, neighbours: &Neighbours, _dt: f32) {
+        for i in 0..self.particles.len() {
+            let pi = &self.particles[i];
             let neighbours: Vec<&Particle> = neighbours[i]
                                              .iter()
                                              .map(|&j| { &self.particles[j] })
@@ -113,9 +113,30 @@ impl Universe {
 
             // Compute navier stokes update
             let dv = self.compute_dv(pi, neighbours);
+            self.particles[i].dv += dv;
+        }
+    }
+
+    fn update_forces_dv(&mut self, force_neighbours: &Neighbours, _dt: f32) {
+        for (force, neighbours) in izip!(self.forces.iter(), force_neighbours.iter()) {
+            for j in neighbours.iter() {
+                let j = *j;
+                let pj = &self.particles[j];
+                let dir = (pj.pos - force.pos()).normalize();
+                let dist2 = (pj.pos - force.pos()).magnitude2();
+                let dv = dir * force.power / dist2;
+
+                self.particles[j].dv += dv;
+            }
+        }
+    }
+
+    fn update_integrate(&mut self, dt: f32) {
+        for i in 0..self.particles.len() {
+            let pi = &self.particles[i];
 
             // Find velocity
-            let mut vel = pi.vel + dv * dt;
+            let mut vel = pi.vel + pi.dv * dt;
 
             // Find position
             let pos = pi.pos + vel * dt;
@@ -123,32 +144,9 @@ impl Universe {
             // Wall bounce update
             vel = self.compute_wall_bounce(&pos, &vel);
 
-            Particle{
-                pos: pos,
-                vel: vel,
-                ..*pi
-            }
-        }).collect()
-    }
-
-    fn apply_forces(&self, force_neighbours: &Neighbours, dt: f32) -> Vec<Particle> {
-        let mut new_particles = self.particles.clone();
-        for (force, neighbours) in izip!(self.forces.iter(), force_neighbours.iter()) {
-            for j in neighbours.iter() {
-                let pj = &new_particles[*j];
-                let dir = (pj.pos - force.pos()).normalize();
-                let dist2 = (pj.pos - force.pos()).magnitude2();
-                let dv = dir * force.power / dist2;
-
-                let vel = pj.vel + dv * dt;
-                let pos = pj.pos + vel * dt;
-
-                new_particles[*j].vel = vel;
-                new_particles[*j].pos = pos;
-            }
+            self.particles[i].pos = pos;
+            self.particles[i].vel = vel;
         }
-
-        new_particles
     }
 
     fn compute_dv(&self, pi: &Particle, neighbours: Vec<&Particle>) -> Vector2f {

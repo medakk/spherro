@@ -25,6 +25,7 @@ pub fn initialize(width: f32, height: f32, strategy: Strategy) -> Vec<Particle> 
                     pos: position,
                     col: col,
                     vel: vec2f_zero(),
+                    dv: vec2f_zero(),
                     mass: 100.0,
                     rho: 0.0,
                     pressure: 0.0
@@ -56,6 +57,7 @@ pub fn initialize(width: f32, height: f32, strategy: Strategy) -> Vec<Particle> 
                         pos: position,
                         col: col,
                         vel: vec2f_zero(),
+                        dv: vec2f_zero(),
                         mass: 100.0,
                         rho: 0.0,
                         pressure: 0.0
