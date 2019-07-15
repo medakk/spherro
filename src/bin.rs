@@ -98,7 +98,8 @@ fn main() {
         // Debug accelerator
         if false {
             universe.clear_colors();
-            universe.debug_update(dt);
+            // universe.debug_single_particle();
+            universe.debug_first_force();
 
             let lines = universe.debug_splits();
             for (p1, p2) in lines.iter() {

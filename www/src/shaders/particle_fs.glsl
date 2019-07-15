@@ -7,9 +7,11 @@ varying vec2 v_uv;
 varying vec2 v_vel;
 
 void main() {
-    vec2 vel = 1.0 + abs(v_vel*0.001);
     vec2 shifted_uv = v_uv - vec2(0.5, 0.5);
+
+    vec2 vel = 1.0 + abs(v_vel*0.001);
     shifted_uv *= vel.yx;
+
     float dist2 = dot(shifted_uv, shifted_uv);
     if(dist2 > 0.5*0.5) {
         discard;

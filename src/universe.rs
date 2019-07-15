@@ -49,13 +49,14 @@ impl Universe {
             accel.nearest_by_idx(i, H*2.0)
         }).collect();
 
-        let force_neighbours = self.forces.iter().map(|f| {
+        let force_neighbours: Neighbours = self.forces.iter().map(|f| {
             accel.nearest_by_pos(f.pos(), f.r)
         }).collect();
 
         self.update_particle_fields(&neighbours, dt);
         self.update_navierstokes_dv(&neighbours, dt);
         self.update_forces_dv(&force_neighbours, dt);
+
         self.update_integrate(dt);
     }
 
@@ -79,6 +80,7 @@ impl Universe {
         &self.particles
     }
 
+    // Updates the density, pressure and dv of every particle
     fn update_particle_fields(&mut self, neighbours: &Neighbours, _dt: f32) {
         const COL_BLUE: Color = Color::new(0.0, 0.0, 1.0);
         const COL_RED: Color = Color::new(1.0, 0.0, 0.0);
@@ -103,6 +105,7 @@ impl Universe {
         }
     }
 
+    // Computes the navier stokes update for every particle
     fn update_navierstokes_dv(&mut self, neighbours: &Neighbours, _dt: f32) {
         for i in 0..self.particles.len() {
             let pi = &self.particles[i];
@@ -112,11 +115,12 @@ impl Universe {
                                              .collect();
 
             // Compute navier stokes update
-            let dv = self.compute_dv(pi, neighbours);
+            let dv = self.compute_navierstokes_dv(pi, neighbours);
             self.particles[i].dv += dv;
         }
     }
 
+    // Compute the effect of extern forces on particles
     fn update_forces_dv(&mut self, force_neighbours: &Neighbours, _dt: f32) {
         for (force, neighbours) in izip!(self.forces.iter(), force_neighbours.iter()) {
             for j in neighbours.iter() {
@@ -131,6 +135,8 @@ impl Universe {
         }
     }
 
+    // Apply the updated dv to the particle, and ensure that boundaries
+    // are satisfied
     fn update_integrate(&mut self, dt: f32) {
         for i in 0..self.particles.len() {
             let pi = &self.particles[i];
@@ -149,7 +155,7 @@ impl Universe {
         }
     }
 
-    fn compute_dv(&self, pi: &Particle, neighbours: Vec<&Particle>) -> Vector2f {
+    fn compute_navierstokes_dv(&self, pi: &Particle, neighbours: Vec<&Particle>) -> Vector2f {
         // Compute x_ijs
         let x_ijs: Vec<Vector2f> = neighbours.iter().map(|pj| {
             pi.pos - pj.pos
@@ -208,8 +214,7 @@ impl Universe {
 
 // All debug functions
 impl Universe {
-    pub fn debug_update(&mut self, _dt: f32) {
-        /*
+    pub fn debug_single_particle(&mut self) {
         const CHOSEN_IDX: usize = 247;
         let accel = Grid::new(self.width, self.height, H, &self.particles);
         let neighbours = accel.nearest_by_idx(CHOSEN_IDX, H*2.0);
@@ -217,7 +222,9 @@ impl Universe {
         for j in neighbours.into_iter() {
             self.particles[j].col = Color::new(1.0, 1.0, 0.0);
         }
-        */
+    }
+
+    pub fn debug_first_force(&mut self) {
         if self.forces.len() == 0 {
             return;
         }
