@@ -7,6 +7,7 @@ use crate::initializer;
 use crate::kernel::*;
 use crate::force::Force;
 
+const MASS: f32 = 100.0;
 const H: f32 = 35.0;
 const VISC: f32 = 10.0;
 const REST_RHO: f32 = 1.0 / (5.0 * 5.0 * 5.0);
@@ -32,7 +33,7 @@ impl Universe {
             set_panic_hook();
         }
 
-        let particles = initializer::initialize(width, height, strategy);
+        let particles = initializer::initialize(strategy, width, height, MASS);
 
         Universe {
             particles: particles,
@@ -49,7 +50,7 @@ impl Universe {
             accel.nearest_by_idx(i, H*2.0)
         }).collect();
 
-        let force_neighbours: Neighbours = self.forces.iter().map(|f| {
+        let force_neighbours = self.forces.iter().map(|f| {
             accel.nearest_by_pos(f.pos(), f.r)
         }).collect();
 
