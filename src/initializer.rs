@@ -25,7 +25,6 @@ pub fn initialize(strategy: Strategy, width: f32, height: f32, particle_mass: f3
                     pos: position,
                     col: col,
                     vel: vec2f_zero(),
-                    dv: vec2f_zero(),
                     mass: particle_mass,
                     rho: 0.0,
                     pressure: 0.0
@@ -57,7 +56,6 @@ pub fn initialize(strategy: Strategy, width: f32, height: f32, particle_mass: f3
                         pos: position,
                         col: col,
                         vel: vec2f_zero(),
-                        dv: vec2f_zero(),
                         mass: particle_mass,
                         rho: 0.0,
                         pressure: 0.0

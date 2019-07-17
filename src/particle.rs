@@ -6,7 +6,6 @@ use crate::accelerators::{HasPosition};
 pub struct Particle {
     pub pos: Vector2f,
     pub vel: Vector2f,
-    pub dv: Vector2f,
     pub mass: f32,
     pub rho: f32,
     pub pressure: f32,

@@ -21,8 +21,8 @@ const renderLoop = (currentTime) => {
     fpsCounter.register(currentTime);
     renderer.draw(universe, currentTime);
 
-    for(var i=0; i<10; i++) {
-        universe.update(0.001);
+    for(var i=0; i<1; i++) {
+        universe.update(0.010);
     }
 
     if(shouldReset) {
