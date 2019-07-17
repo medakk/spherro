@@ -11,8 +11,11 @@ const MASS: f32 = 100.0;
 const H: f32 = 35.0;
 const VISC: f32 = 10.0;
 const REST_RHO: f32 = 1.0 / (5.0 * 5.0 * 5.0);
-const BOUNCE_MIN_DV: f32 = 500.0;
-const BOUNCE_COR: f32 = 0.5;
+
+// Boundary parameters
+const BOUNDARY_COR: f32 = 0.5; // Coefficient of restitution
+const BOUNDARY_MIN_DV: f32 = 500.0;
+
 const GRAVITY: f32 = -10000.0;
 const K: f32 = 10.0;
 
@@ -37,33 +40,20 @@ impl Universe {
 
         let particles = initializer::initialize(strategy, width, height, MASS);
 
-        let mut universe = Universe {
+        Universe {
             particles: particles,
             width: width,
             height: height,
             forces: Vec::new(),
-        };
-
-        let accel = Grid::new(width, height, H, &universe.particles);
-        let neighbours: Neighbours = (0..universe.particles.len()).map(|i| {
-            accel.nearest_by_idx(i, H*2.0)
-        }).collect();
-        universe.update_particle_fields(&neighbours);
-
-        universe
+        }
     }
 
     pub fn update(&mut self, dt: f32) {
-        let accel = Grid::new(self.width, self.height, H, &self.particles);
-        let neighbours: Neighbours = (0..self.particles.len()).map(|i| {
-            accel.nearest_by_idx(i, H*2.0)
-        }).collect();
-        /*
-        let force_neighbours: Neighbours = self.forces.iter().map(|f| {
-            accel.nearest_by_pos(f.pos(), f.r)
-        }).collect();
-        */
+        // This assumes that the neighbours remain the same for the
+        // entire update
+        let (neighbours, _force_neighbours) = self.compute_neighbours();
 
+        self.update_particle_fields(&neighbours);
         self.update_nonpressure_forces(&neighbours, dt);
 
         for _ in 0..3 { //TODO: this condition should take density error
@@ -92,6 +82,7 @@ impl Universe {
         &self.particles
     }
 
+    // Updates the density and pressure for every particle
     fn update_particle_fields(&mut self, neighbours: &Neighbours) {
         for i in 0..self.particles.len() {
             let pi = &self.particles[i];
@@ -181,7 +172,20 @@ impl Universe {
             self.particles[i].vel += dt * p_dv;
             self.particles[i].pos += dt * dt * p_dv;
         }
+    }
 
+    // the first return value is the neighbours for each particle,
+    // the second return value is the neighbours for all the forces
+    fn compute_neighbours(&self) -> (Neighbours, Neighbours) {
+        let accel = Grid::new(self.width, self.height, H, &self.particles);
+        let neighbours: Neighbours = (0..self.particles.len()).map(|i| {
+            accel.nearest_by_idx(i, H*2.0)
+        }).collect();
+        let force_neighbours: Neighbours = self.forces.iter().map(|f| {
+            accel.nearest_by_pos(f.pos(), f.r)
+        }).collect();
+
+        (neighbours, force_neighbours)
     }
 
     /*
@@ -202,17 +206,19 @@ impl Universe {
     */
 
     fn boundary_correction_vel(&self, pos: &Vector2f, vel: &Vector2f) -> Vector2f {
+        //TODO: This doesn't consider dt
+
         let mut vel: Vector2f = *vel;
 
         // Bounce off walls
         if pos.x < 0.0 {
-            vel.x = ( BOUNCE_MIN_DV).max(-BOUNCE_COR*vel.x);
+            vel.x = ( BOUNDARY_MIN_DV).max(-BOUNDARY_COR*vel.x);
         } else if pos.x > self.width {
-            vel.x = (-BOUNCE_MIN_DV).min(-BOUNCE_COR*vel.x);
+            vel.x = (-BOUNDARY_MIN_DV).min(-BOUNDARY_COR*vel.x);
         } else if pos.y < 0.0 {
-            vel.y = ( BOUNCE_MIN_DV).max(-BOUNCE_COR*vel.y);
+            vel.y = ( BOUNDARY_MIN_DV).max(-BOUNDARY_COR*vel.y);
         } else if pos.y > self.height {
-            vel.y = (-BOUNCE_MIN_DV).min(-BOUNCE_COR*vel.y);
+            vel.y = (-BOUNDARY_MIN_DV).min(-BOUNDARY_COR*vel.y);
         }
 
         vel
