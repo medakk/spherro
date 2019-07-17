@@ -44,7 +44,11 @@ impl Universe {
             forces: Vec::new(),
         };
 
-        universe.init_particle_densities();
+        let accel = Grid::new(width, height, H, &universe.particles);
+        let neighbours: Neighbours = (0..universe.particles.len()).map(|i| {
+            accel.nearest_by_idx(i, H*2.0)
+        }).collect();
+        universe.update_particle_fields(&neighbours);
 
         universe
     }
@@ -60,7 +64,54 @@ impl Universe {
         }).collect();
         */
 
+        self.update_nonpressure_forces(&neighbours, dt);
 
+        for _ in 0..3 { //TODO: this condition should take density error
+            self.update_particle_fields(&neighbours);
+            self.update_pressure_forces(&neighbours, dt);
+        }
+    }
+
+    pub fn get_size(&self) -> usize {
+        self.particles.len()
+    }
+
+    pub fn add_force(&mut self, force: Force) {
+        self.forces.push(force);
+    }
+
+    pub fn clear_forces(&mut self) {
+        self.forces.clear();
+    }
+}
+
+#[allow(non_snake_case)]
+impl Universe {
+
+    pub fn get_particles(&self) -> &Vec<Particle> {
+        &self.particles
+    }
+
+    fn update_particle_fields(&mut self, neighbours: &Neighbours) {
+        for i in 0..self.particles.len() {
+            let pi = &self.particles[i];
+            let rho: f32 = neighbours[i].iter().map(|&j| {
+                let pj = &self.particles[j];
+                let x_ij = pi.pos - pj.pos;
+                let q = x_ij.magnitude() / H;
+                let Wj = cubicspline_f(q) / H.powi(3);
+                pj.mass * Wj
+            }).sum();
+
+            let pressure = K * ((rho / REST_RHO).powi(7) - 1.0);
+            self.particles[i].rho = rho;
+            self.particles[i].pressure = pressure;
+        }
+    }
+
+    // Performs the first part of the splitting solver: updates position and velocity
+    // without considering forces which arise from differences in pressure
+    fn update_nonpressure_forces(&mut self, neighbours: &Neighbours, dt: f32) {
         for i in 0..self.particles.len() {
             let neighbours: Vec<&Particle> = neighbours[i]
                                              .iter()
@@ -90,99 +141,47 @@ impl Universe {
                 q1 * q2
             }).sum::<Vector2f>();
 
-            self.particles[i].vel = self.particles[i].vel + (VISC * ddv + Vector2f::new(0.0, GRAVITY)) * dt;
-            let new_pos = self.particles[i].pos + dt * self.particles[i].vel;
-            self.particles[i].vel = self.compute_wall_bounce(&new_pos, &self.particles[i].vel);
-            self.particles[i].pos = self.particles[i].pos + self.particles[i].vel * dt;
-        }
+            let mut vel = self.particles[i].vel
+                        + (VISC * ddv + Vector2f::new(0.0, GRAVITY)) * dt;
+            vel = self.boundary_correction_vel(&self.particles[i].pos, &vel);
 
-        for _ in 0..3 {
-            for i in 0..self.particles.len() {
-
-                let neighbours: Vec<&Particle> = neighbours[i]
-                                                .iter()
-                                                .map(|&j| { &self.particles[j] })
-                                                .collect();
-
-                let rho: f32 = neighbours.iter().map(|&pj| {
-                    let x_ij = self.particles[i].pos - pj.pos;
-                    let q = x_ij.magnitude() / H;
-                    let Wj = cubicspline_f(q) / H.powi(3);
-                    pj.mass * Wj
-                }).sum();
-
-                let pressure = K * ((rho / REST_RHO).powi(7) - 1.0);
-                self.particles[i].rho = rho;
-                self.particles[i].pressure = pressure;
-            }
-
-            for i in 0..self.particles.len() {
-                let neighbours: Vec<&Particle> = neighbours[i]
-                                                .iter()
-                                                .map(|&j| { &self.particles[j] })
-                                                .collect();
-
-                // Compute gradient of W
-                let dWs: Vec<Vector2f> = neighbours.iter().map(|pj| {
-                    let x_ij = self.particles[i].pos - pj.pos;
-                    let q = x_ij.magnitude() / H;
-                    let df = cubicspline_df(q);
-
-                    let dq = (self.particles[i].pos - pj.pos) / (H * q); // gradient of q
-                    let dW = (1.0 / H.powi(3)) * df * dq;
-
-                    dW
-                }).collect();
-
-                let dP = self.particles[i].rho * izip!(&neighbours, &dWs).map(|(pj, dW)| {
-                    pj.mass * (self.particles[i].pressure / self.particles[i].rho.powi(2) + pj.pressure / pj.rho.powi(2)) * dW
-                }).sum::<Vector2f>();
-
-                let p_dv = -dP / self.particles[i].rho;
-
-                self.particles[i].vel += dt * p_dv;
-                self.particles[i].pos += dt * dt * p_dv;
-            }
+            self.particles[i].vel = vel;
+            self.particles[i].pos += vel * dt;
         }
     }
 
-    pub fn get_size(&self) -> usize {
-        self.particles.len()
-    }
-
-    pub fn add_force(&mut self, force: Force) {
-        self.forces.push(force);
-    }
-
-    pub fn clear_forces(&mut self) {
-        self.forces.clear();
-    }
-}
-
-#[allow(non_snake_case)]
-impl Universe {
-
-    pub fn get_particles(&self) -> &Vec<Particle> {
-        &self.particles
-    }
-
-    fn init_particle_densities(&mut self) {
-        let accel = Grid::new(self.width, self.height, H, &self.particles);
-        let neighbours: Neighbours = (0..self.particles.len()).map(|i| {
-            accel.nearest_by_idx(i, H*2.0)
-        }).collect();
-
+    // Performs the second part of the splitting solver: updates position and velocity
+    // with only pressure forces
+    fn update_pressure_forces(&mut self, neighbours: &Neighbours, dt: f32) {
         for i in 0..self.particles.len() {
-            let pi = &self.particles[i];
-            let rho: f32 = neighbours[i].iter().map(|&j| {
-                let pj = &self.particles[j];
-                let x_ij = pi.pos - pj.pos;
+            let neighbours: Vec<&Particle> = neighbours[i]
+                                            .iter()
+                                            .map(|&j| { &self.particles[j] })
+                                            .collect();
+
+            // Compute gradient of W
+            let dWs: Vec<Vector2f> = neighbours.iter().map(|pj| {
+                let x_ij = self.particles[i].pos - pj.pos;
                 let q = x_ij.magnitude() / H;
-                let Wj = cubicspline_f(q) / H.powi(3);
-                pj.mass * Wj
-            }).sum();
-            self.particles[i].rho = rho;
+                let df = cubicspline_df(q);
+
+                let dq = (self.particles[i].pos - pj.pos) / (H * q); // gradient of q
+                let dW = (1.0 / H.powi(3)) * df * dq;
+
+                dW
+            }).collect();
+
+            let dP = self.particles[i].rho * izip!(&neighbours, &dWs).map(|(pj, dW)| {
+                pj.mass * (self.particles[i].pressure / self.particles[i].rho.powi(2) + pj.pressure / pj.rho.powi(2)) * dW
+            }).sum::<Vector2f>();
+
+            let mut p_dv = -dP / self.particles[i].rho;
+            p_dv = self.boundary_correction_vel(&self.particles[i].pos, &p_dv);
+
+            self.particles[i].vel += dt * p_dv;
+            self.particles[i].pos += dt * dt * p_dv;
         }
+
     }
 
     /*
@@ -202,7 +201,7 @@ impl Universe {
     }
     */
 
-    fn compute_wall_bounce(&self, pos: &Vector2f, vel: &Vector2f) -> Vector2f {
+    fn boundary_correction_vel(&self, pos: &Vector2f, vel: &Vector2f) -> Vector2f {
         let mut vel: Vector2f = *vel;
 
         // Bounce off walls
