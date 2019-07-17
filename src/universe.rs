@@ -9,8 +9,8 @@ use crate::force::Force;
 
 const MASS: f32 = 100.0;
 const H: f32 = 35.0;
-const VISC: f32 = 10.0;
-const REST_RHO: f32 = 1.0 / (5.0 * 5.0 * 5.0);
+const VISC: f32 = 1.0;
+const REST_RHO: f32 = MASS / (100.0 * 100.0);
 
 // Boundary parameters
 const BOUNDARY_COR: f32 = 0.5; // Coefficient of restitution
@@ -103,7 +103,7 @@ impl Universe {
     // Performs the first part of the splitting solver: updates position and velocity
     // without considering forces which arise from differences in pressure
     fn update_nonpressure_forces(&mut self, neighbours: &Neighbours, force_neighbours: &Neighbours, dt: f32) {
-        let mut force_vel = vec![vec2f_zero(); self.particles.len()];
+        let mut force_dv = vec![vec2f_zero(); self.particles.len()];
 
         // Forces update
         for (force, neighbours) in izip!(self.forces.iter(), force_neighbours.iter()) {
@@ -114,16 +114,17 @@ impl Universe {
                 let dist2 = (pj.pos - force.pos()).magnitude2();
                 let vel = dir * force.power / dist2;
 
-                force_vel[j] += vel;
+                force_dv[j] += vel;
             }
         }
 
         // Viscosity and gravity update
+        let gravity_dv = Vector2f::new(0.0, GRAVITY);
         for i in 0..self.particles.len() {
             let neighbours: Vec<&Particle> = neighbours[i]
-                                             .iter()
-                                             .map(|&j| { &self.particles[j] })
-                                             .collect();
+                                            .iter()
+                                            .map(|&j| { &self.particles[j] })
+                                            .collect();
 
             // Compute x_ijs
             let x_ijs: Vec<Vector2f> = neighbours.iter().map(|pj| {
@@ -149,7 +150,7 @@ impl Universe {
             }).sum::<Vector2f>();
 
             let mut vel = self.particles[i].vel
-                        + (VISC * ddv + Vector2f::new(0.0, GRAVITY) + force_vel[i]) * dt;
+                        + (VISC * ddv + gravity_dv + force_dv[i]) * dt;
             vel = self.boundary_correction_vel(&self.particles[i].pos, &vel);
 
             self.particles[i].vel = vel;

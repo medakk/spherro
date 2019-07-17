@@ -16,7 +16,6 @@ var shouldReset = false;
 var mouseX = 0;
 var mouseY = 0;
 var isMousedown = false;
-var forcePower = 1.0;
 
 const renderLoop = (currentTime) => {
     fpsCounter.register(currentTime);
@@ -33,11 +32,8 @@ const renderLoop = (currentTime) => {
 
     universe.clear_forces();
     if(isMousedown) {
-        forcePower = Math.min(forcePower * 10.0, 2e8);
-        const force = Force.new(mouseX, mouseY, forcePower, 100.0);
+        const force = Force.new(mouseX, mouseY, 2e8, 100.0);
         universe.add_force(force);
-    } else {
-        forcePower = 1.0;
     }
 
     const fps = fpsCounter.smoothFPS();
