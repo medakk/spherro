@@ -51,10 +51,10 @@ impl Universe {
     pub fn update(&mut self, dt: f32) {
         // This assumes that the neighbours remain the same for the
         // entire update
-        let (neighbours, _force_neighbours) = self.compute_neighbours();
+        let (neighbours, force_neighbours) = self.compute_neighbours();
 
         self.update_particle_fields(&neighbours);
-        self.update_nonpressure_forces(&neighbours, dt);
+        self.update_nonpressure_forces(&neighbours, &force_neighbours, dt);
 
         for _ in 0..3 { //TODO: this condition should take density error
             self.update_particle_fields(&neighbours);
@@ -102,7 +102,23 @@ impl Universe {
 
     // Performs the first part of the splitting solver: updates position and velocity
     // without considering forces which arise from differences in pressure
-    fn update_nonpressure_forces(&mut self, neighbours: &Neighbours, dt: f32) {
+    fn update_nonpressure_forces(&mut self, neighbours: &Neighbours, force_neighbours: &Neighbours, dt: f32) {
+        let mut force_vel = vec![vec2f_zero(); self.particles.len()];
+
+        // Forces update
+        for (force, neighbours) in izip!(self.forces.iter(), force_neighbours.iter()) {
+            for j in neighbours.iter() {
+                let j = *j;
+                let pj = &self.particles[j];
+                let dir = (pj.pos - force.pos()).normalize();
+                let dist2 = (pj.pos - force.pos()).magnitude2();
+                let vel = dir * force.power / dist2;
+
+                force_vel[j] += vel;
+            }
+        }
+
+        // Viscosity and gravity update
         for i in 0..self.particles.len() {
             let neighbours: Vec<&Particle> = neighbours[i]
                                              .iter()
@@ -133,7 +149,7 @@ impl Universe {
             }).sum::<Vector2f>();
 
             let mut vel = self.particles[i].vel
-                        + (VISC * ddv + Vector2f::new(0.0, GRAVITY)) * dt;
+                        + (VISC * ddv + Vector2f::new(0.0, GRAVITY) + force_vel[i]) * dt;
             vel = self.boundary_correction_vel(&self.particles[i].pos, &vel);
 
             self.particles[i].vel = vel;
@@ -187,23 +203,6 @@ impl Universe {
 
         (neighbours, force_neighbours)
     }
-
-    /*
-    // Compute the effect of extern forces on particles
-    fn update_forces_dv(&mut self, force_neighbours: &Neighbours, _dt: f32) {
-        for (force, neighbours) in izip!(self.forces.iter(), force_neighbours.iter()) {
-            for j in neighbours.iter() {
-                let j = *j;
-                let pj = &self.particles[j];
-                let dir = (pj.pos - force.pos()).normalize();
-                let dist2 = (pj.pos - force.pos()).magnitude2();
-                let dv = dir * force.power / dist2;
-
-                self.particles[j].dv += dv;
-            }
-        }
-    }
-    */
 
     fn boundary_correction_vel(&self, pos: &Vector2f, vel: &Vector2f) -> Vector2f {
         //TODO: This doesn't consider dt

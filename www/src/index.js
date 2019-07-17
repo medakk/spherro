@@ -16,13 +16,14 @@ var shouldReset = false;
 var mouseX = 0;
 var mouseY = 0;
 var isMousedown = false;
+var forcePower = 1.0;
 
 const renderLoop = (currentTime) => {
     fpsCounter.register(currentTime);
     renderer.draw(universe, currentTime);
 
-    for(var i=0; i<1; i++) {
-        universe.update(0.010);
+    for(var i=0; i<2; i++) {
+        universe.update(0.005);
     }
 
     if(shouldReset) {
@@ -32,8 +33,11 @@ const renderLoop = (currentTime) => {
 
     universe.clear_forces();
     if(isMousedown) {
-        const force = Force.new(mouseX, mouseY, 2e8, 100.0);
+        forcePower = Math.min(forcePower * 10.0, 2e8);
+        const force = Force.new(mouseX, mouseY, forcePower, 100.0);
         universe.add_force(force);
+    } else {
+        forcePower = 1.0;
     }
 
     const fps = fpsCounter.smoothFPS();
