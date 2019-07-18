@@ -1,3 +1,7 @@
+// TODO: The formula here is the same as in the SPH Fluids in Computer Graphics
+// paper, but according to https://pysph.readthedocs.io/en/latest/reference/kernels.html
+// there are different constant factors depending on the dimensionality
+
 #[inline]
 pub fn cubicspline_f(q: f32) -> f32 {
     if 0.0 <= q && q < 1.0 {
