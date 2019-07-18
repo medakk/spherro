@@ -73,6 +73,12 @@ impl Universe {
     pub fn clear_forces(&mut self) {
         self.forces.clear();
     }
+
+    pub fn is_unstable(&self) -> bool {
+        self.particles.iter().any(|pi| {
+            !pi.pos.x.is_finite() || !pi.pos.y.is_finite()
+        })
+    }
 }
 
 #[allow(non_snake_case)]
