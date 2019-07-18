@@ -16,6 +16,7 @@ var shouldReset = false;
 var mouseX = 0;
 var mouseY = 0;
 var isMousedown = false;
+var isStable = true;
 
 const renderLoop = (currentTime) => {
     fpsCounter.register(currentTime);
@@ -23,10 +24,18 @@ const renderLoop = (currentTime) => {
 
     for(var i=0; i<2; i++) {
         universe.update(0.005);
+        if(universe.is_unstable()) {
+            isStable = false;
+            document.getElementById('stability').innerText = 'Unstable';
+            document.getElementById('stability').style.color = 'red';
+        }
     }
 
     if(shouldReset) {
         universe = Universe.new(WIDTH, HEIGHT, strategy);
+        isStable = true;
+        document.getElementById('stability').innerText = 'Stable';
+        document.getElementById('stability').style.color = 'green';
         shouldReset = false;
     }
 

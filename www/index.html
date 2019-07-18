@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>spherro</title>
     <style>
-      body {
+      #main {
         position: absolute;
         top: 0;
         left: 0;
@@ -23,14 +23,32 @@
       }
 
       #fps {
-        font: 20px black;
+        font-size: 20px;
         font-family: monospace;
+      }
+
+      #stability {
+        font-size: 14px;
+        color: green;
+        font-weight: bold;
+        font-family: monospace;
+      }
+
+      p {
+        margin-top: 5px;
+        margin-bottom: 5px;
       }
     </style>
   </head>
   <body>
-    <canvas id="spherro-canvas"></canvas>
-    <p id="fps">FPS</p>
+    <div id="main">
+      <canvas id="spherro-canvas"></canvas>
+      <p id="fps">FPS</p>
+      <p id="stability">Stable</p>
+    </div>
+
+    <br>
+
     <script src="./bootstrap.js"></script>
   </body>
 </html>
