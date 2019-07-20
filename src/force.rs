@@ -1,19 +1,19 @@
 use wasm_bindgen::prelude::*;
 use crate::util::*;
 
-#[wasm_bindgen]
+use noisy_float::prelude::*;
+
 pub struct Force {
     //TODO: using x,y instead of Vector2f because of lack of
     //wasm_bindgen in Vector2f
-    pub x: f32,
-    pub y: f32,
-    pub power: f32,
-    pub r: f32,
+    pub x: R32,
+    pub y: R32,
+    pub power: R32,
+    pub r: R32,
 }
 
-#[wasm_bindgen]
 impl Force {
-    pub fn new(x: f32, y: f32, power: f32, r: f32) -> Force {
+    pub fn new(x: R32, y: R32, power: R32, r: R32) -> Force {
         Force{
             x: x,
             y: y,

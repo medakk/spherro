@@ -5,8 +5,8 @@ pub trait HasPosition {
 }
 
 pub trait Accelerator {
-    fn nearest_by_idx(&self, i: usize, r: f32) -> Vec<usize>;
-    fn nearest_by_pos(&self, pos: Vector2f, r: f32) -> Vec<usize>;
+    fn nearest_by_idx(&self, i: usize, r: R32) -> Vec<usize>;
+    fn nearest_by_pos(&self, pos: Vector2f, r: R32) -> Vec<usize>;
 }
 
 mod grid;

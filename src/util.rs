@@ -1,12 +1,17 @@
 extern crate web_sys;
 
-use cgmath::{Vector2, Vector3};
+use noisy_float::prelude::*;
 
-pub type Vector2f = Vector2<f32>;
-pub type Color = Vector3<f32>;
+use cgmath::{Vector2, Vector3};
+use cgmath::BaseFloat;
+
+pub type Vector2f = Vector2<R32>;
+pub type Color = Vector3<R32>;
+
+impl BaseFloat for R32 {}
 
 pub fn vec2f_zero() -> Vector2f {
-    Vector2f::new(0.0, 0.0)
+    Vector2f::new(r32(0.0), r32(0.0))
 }
 
 // A macro to provide `println!(..)`-style syntax for `console.log` logging.
@@ -29,4 +34,4 @@ pub fn set_panic_hook() {
 }
 
 #[inline]
-pub fn clamp_f32(v: f32, a: f32, b: f32) -> f32 { b.min(v.max(a)) }
+pub fn clamp_R32(v: R32, a: R32, b: R32) -> R32 { b.min(v.max(a)) }

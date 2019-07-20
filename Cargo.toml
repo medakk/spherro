@@ -43,6 +43,8 @@ wee_alloc = { version = "0.4.2", optional = true }
 [target.'cfg(not(target_arch="wasm32"))'.dependencies]
 kiss3d = "0.20.1"
 nalgebra = "0.18.0"
+noisy_float = "0.1.11"
+num-traits = "0.2.8"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.2"

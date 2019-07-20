@@ -96,7 +96,7 @@ impl Universe {
                 let pj = &self.particles[j];
                 let x_ij = pi.pos - pj.pos;
                 let q = x_ij.magnitude() / H;
-                let Wj = cubicspline_f(q) / H.powi(3);
+                let Wj = cubicspline_f(q) / H.powi(3); //TODO: This should be H.powi(2), but crashes for that
                 pj.mass * Wj
             }).sum();
 
