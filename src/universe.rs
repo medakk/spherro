@@ -114,19 +114,19 @@ impl Universe {
         // Forces update
         for (force, neighbours) in izip!(self.forces.iter(), force_neighbours.iter()) {
             for j in neighbours.iter() {
-                let j = *j;
-                let pj = &self.particles[j];
+                let pj = &self.particles[*j];
                 let dir = (pj.pos - force.pos()).normalize();
                 let dist2 = (pj.pos - force.pos()).magnitude2();
                 let vel = dir * force.power / dist2;
 
-                force_dv[j] += vel;
+                force_dv[*j] += vel;
             }
         }
 
         // Viscosity and gravity update
         let gravity_dv = Vector2f::new(0.0, GRAVITY);
         for i in 0..self.particles.len() {
+            let pi = &self.particles[i];
             let neighbours: Vec<&Particle> = neighbours[i]
                                             .iter()
                                             .map(|&j| { &self.particles[j] })
@@ -134,7 +134,7 @@ impl Universe {
 
             // Compute x_ijs
             let x_ijs: Vec<Vector2f> = neighbours.iter().map(|pj| {
-                self.particles[i].pos - pj.pos
+                pi.pos - pj.pos
             }).collect();
 
             // Compute gradient of W
@@ -142,7 +142,7 @@ impl Universe {
                 let q = x_ij.magnitude() / H;
                 let df = cubicspline_df(q);
 
-                let dq = (self.particles[i].pos - pj.pos) / (H * q); // gradient of q
+                let dq = (pi.pos - pj.pos) / (H * q); // gradient of q
                 let dW = (1.0 / H.powi(3)) * df * dq;
 
                 dW
@@ -150,14 +150,14 @@ impl Universe {
 
             // Compute viscosity
             let ddv = 2.0 * izip!(&neighbours, &x_ijs, &dWs).map(|(pj, x_ij, dW)| {
-                let q1 = (pj.mass / pj.rho) * (self.particles[i].vel - pj.vel);
+                let q1 = (pj.mass / pj.rho) * (pi.vel - pj.vel);
                 let q2 = (x_ij.dot(*dW)) / (x_ij.dot(*x_ij) + 0.01*H*H);
                 q1 * q2
             }).sum::<Vector2f>();
 
-            let mut vel = self.particles[i].vel
+            let mut vel = pi.vel
                         + (VISC * ddv + gravity_dv + force_dv[i]) * dt;
-            vel = self.boundary_correction_vel(&self.particles[i].pos, &vel);
+            vel = self.boundary_correction_vel(&pi.pos, &vel);
 
             self.particles[i].vel = vel;
             self.particles[i].pos += vel * dt;
@@ -168,6 +168,7 @@ impl Universe {
     // with only pressure forces
     fn update_pressure_forces(&mut self, neighbours: &Neighbours, dt: f32) {
         for i in 0..self.particles.len() {
+            let pi = &self.particles[i];
             let neighbours: Vec<&Particle> = neighbours[i]
                                             .iter()
                                             .map(|&j| { &self.particles[j] })
@@ -175,22 +176,22 @@ impl Universe {
 
             // Compute gradient of W
             let dWs: Vec<Vector2f> = neighbours.iter().map(|pj| {
-                let x_ij = self.particles[i].pos - pj.pos;
+                let x_ij = pi.pos - pj.pos;
                 let q = x_ij.magnitude() / H;
                 let df = cubicspline_df(q);
 
-                let dq = (self.particles[i].pos - pj.pos) / (H * q); // gradient of q
+                let dq = (pi.pos - pj.pos) / (H * q); // gradient of q
                 let dW = (1.0 / H.powi(3)) * df * dq;
 
                 dW
             }).collect();
 
-            let dP = self.particles[i].rho * izip!(&neighbours, &dWs).map(|(pj, dW)| {
-                pj.mass * (self.particles[i].pressure / self.particles[i].rho.powi(2) + pj.pressure / pj.rho.powi(2)) * dW
+            let dP = pi.rho * izip!(&neighbours, &dWs).map(|(pj, dW)| {
+                pj.mass * (pi.pressure / pi.rho.powi(2) + pj.pressure / pj.rho.powi(2)) * dW
             }).sum::<Vector2f>();
 
-            let mut p_dv = -dP / self.particles[i].rho;
-            p_dv = self.boundary_correction_vel(&self.particles[i].pos, &p_dv);
+            let mut p_dv = -dP / pi.rho;
+            p_dv = self.boundary_correction_vel(&pi.pos, &p_dv);
 
             self.particles[i].vel += dt * p_dv;
             self.particles[i].pos += dt * dt * p_dv;
