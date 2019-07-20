@@ -26,10 +26,8 @@ fn main() {
 
     let mut universe = Universe::new(700.0, 700.0, STRATEGY);
 
-    let mut force_x = 350.0;
+    let mut force_x = 150.0;
     let mut force_y = 100.0;
-    let force = Force::new(force_x, force_y, 2e8, 100.0);
-    universe.add_force(force);
     let mut force_obj = window.add_sphere(10.0 * VIZ_SCALE);
     force_obj.set_color(1.0, 1.0, 0.0);
 

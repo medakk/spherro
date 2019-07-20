@@ -9,12 +9,17 @@ use crate::force::Force;
 
 const MASS: f32 = 100.0;
 const H: f32 = 35.0;
-const VISC: f32 = 1.0;
+const VISC: f32 = 2.0;
 const REST_RHO: f32 = MASS / (100.0 * 100.0);
+
+// This is hack to kill extremely large interaction forces
+// that cause the simulation to explode. We cap the force 
+// to this value.
+const MAX_FORCE_MAG: f32 = 90000.0;
 
 // Boundary parameters
 const BOUNDARY_COR: f32 = 0.5; // Coefficient of restitution
-const BOUNDARY_MIN_DV: f32 = 500.0;
+const BOUNDARY_MIN_DV: f32 = 500.0; // If particle is too slow, it is accelerated to atleast this much
 
 const GRAVITY: f32 = -10000.0;
 const K: f32 = 10.0;
@@ -60,6 +65,8 @@ impl Universe {
             self.update_particle_fields(&neighbours);
             self.update_pressure_forces(&neighbours, dt);
         }
+
+        self.update_boundary();
     }
 
     pub fn get_size(&self) -> usize {
@@ -115,9 +122,12 @@ impl Universe {
         for (force, neighbours) in izip!(self.forces.iter(), force_neighbours.iter()) {
             for j in neighbours.iter() {
                 let pj = &self.particles[*j];
+
                 let dir = (pj.pos - force.pos()).normalize();
                 let dist2 = (pj.pos - force.pos()).magnitude2();
-                let vel = dir * force.power / dist2;
+
+                let mag = (force.power / dist2).min(MAX_FORCE_MAG);
+                let vel = dir * mag;
 
                 force_dv[*j] += vel;
             }
@@ -155,9 +165,8 @@ impl Universe {
                 q1 * q2
             }).sum::<Vector2f>();
 
-            let mut vel = pi.vel
-                        + (VISC * ddv + gravity_dv + force_dv[i]) * dt;
-            vel = self.boundary_correction_vel(&pi.pos, &vel);
+            let vel = pi.vel
+                    + (VISC * ddv + gravity_dv + force_dv[i]) * dt;
 
             self.particles[i].vel = vel;
             self.particles[i].pos += vel * dt;
@@ -190,8 +199,7 @@ impl Universe {
                 pj.mass * (pi.pressure / pi.rho.powi(2) + pj.pressure / pj.rho.powi(2)) * dW
             }).sum::<Vector2f>();
 
-            let mut p_dv = -dP / pi.rho;
-            p_dv = self.boundary_correction_vel(&pi.pos, &p_dv);
+            let p_dv = -dP / pi.rho;
 
             self.particles[i].vel += dt * p_dv;
             self.particles[i].pos += dt * dt * p_dv;
@@ -210,6 +218,14 @@ impl Universe {
         }).collect();
 
         (neighbours, force_neighbours)
+    }
+
+    // Reverses velocity if the particle is outside bounds
+    fn update_boundary(&mut self) {
+        for i in 0..self.particles.len() {
+            let pi = &self.particles[i];
+            self.particles[i].vel = self.boundary_correction_vel(&pi.pos, &pi.vel);
+        }
     }
 
     fn boundary_correction_vel(&self, pos: &Vector2f, vel: &Vector2f) -> Vector2f {
