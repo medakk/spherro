@@ -25,8 +25,11 @@ fn main() {
     let mut first_person = kiss3d::camera::FirstPerson::new(eye, look_at);
 
     let mut universe = Universe::new(700.0, 700.0, STRATEGY);
-    let force = Force::new(350.0, 100.0, 2e8, 100.0);
-    universe.add_force(force);
+
+    let mut force_x = 150.0;
+    let mut force_y = 100.0;
+    let mut force_obj = window.add_sphere(10.0 * VIZ_SCALE);
+    force_obj.set_color(1.0, 1.0, 0.0);
 
     let mut viz_objs: Vec<kiss3d::scene::SceneNode> = Vec::new();
 
@@ -77,6 +80,7 @@ fn main() {
         last_time = curr_time;
         let dt = (dt_ms as f32) / 1000.0;
 
+        const MOVE_SPEED: f32 = 3000.0;
         for event in window.events().iter() {
             match event.value {
                 WindowEvent::Key(Key::Space, Action::Press, _) => {
@@ -86,13 +90,33 @@ fn main() {
                     let force = Force::new(350.0, 100.0, 2e8, 100.0);
                     universe.add_force(force);
                 },
+                WindowEvent::Key(Key::W, Action::Press, _) => {
+                    force_y += MOVE_SPEED * dt;
+                },
+                WindowEvent::Key(Key::S, Action::Press, _) => {
+                    force_y -= MOVE_SPEED * dt;
+                },
+                WindowEvent::Key(Key::A, Action::Press, _) => {
+                    force_x -= MOVE_SPEED * dt;
+                },
+                WindowEvent::Key(Key::D, Action::Press, _) => {
+                    force_x += MOVE_SPEED * dt;
+                },
                 _ => {}
             }
         }
+        universe.clear_forces();
+        let force = Force::new(force_x, force_y, 2e8, 100.0);
+        universe.add_force(force);
+        force_obj.set_local_translation(na::Translation3::new(
+            force_x * VIZ_SCALE,
+            force_y * VIZ_SCALE,
+            0.0,
+        ));
 
-        for _ in 0..10 {
+        for _ in 0..2 {
             let old_particles = universe.get_particles().clone();
-            universe.update(0.001);
+            universe.update(0.005);
             universe.debug_check_nans(&old_particles);
         }
 
