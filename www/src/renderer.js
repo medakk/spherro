@@ -12,18 +12,22 @@ export default class Renderer {
     constructor(canvas, width, height, particleCount) {
         this.width   = width;
         this.height  = height;
+        this.particleCount = particleCount;
 
         // Change the fraction to render to a lower resolution
         canvas.width = width / 1;
         canvas.height = height / 1;
 
-        this.gl = canvas.getContext('webgl');
         this.fetcher = Fetcher.new();
 
-        this.init(this.gl, particleCount);
+        this.initGL(canvas);
     }
 
-    init(gl, particleCount) {
+    initGL(canvas) {
+        const gl = this.gl = canvas.getContext('webgl');
+        const particleCount = this.particleCount;
+        const stride = this.fetcher.stride();
+
         twgl.addExtensionsToContext(gl);
 
         if (!gl.drawArraysInstanced || !gl.createVertexArray) {
@@ -41,7 +45,7 @@ export default class Renderer {
         const programInfo = twgl.createProgramInfo(gl, [VERTEX_SHADER, FRAGMENT_SHADER]);
         const buffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, particleCount*4*4, gl.DYNAMIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, particleCount*stride*4, gl.DYNAMIC_DRAW);
 
         const quad = {
             position: [-0.5, -0.5, 0,
