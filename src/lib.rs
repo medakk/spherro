@@ -3,6 +3,7 @@
 #[allow(dead_code)]
 
 extern crate itertools;
+extern crate image;
 
 #[macro_use]
 pub mod util; //TODO: make this private

@@ -17,7 +17,7 @@ const VIZ_SCALE: f32 = 0.001;
 
 fn main() {
     let mut window = Window::new("spherro");
-    const STRATEGY: Strategy = Strategy::DAMBREAK;
+    const STRATEGY: Strategy = Strategy::YINYANG;
     window.set_background_color(0.85, 0.85, 0.85);
 
     let eye = na::Point3::new(350.0, 350.0, 900.0) * VIZ_SCALE;

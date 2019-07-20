@@ -5,8 +5,8 @@ import FPSCounter from "./fpscounter"
 
 const WIDTH = 700;
 const HEIGHT = 700;
+const strategy = Strategy.YINYANG;
 
-const strategy = Strategy.DAMBREAK;
 var universe = Universe.new(WIDTH, HEIGHT, strategy);
 const canvas = document.getElementById('spherro-canvas');
 const fpsCounter = new FPSCounter(10);
@@ -23,7 +23,7 @@ const renderLoop = (currentTime) => {
     renderer.draw(universe, currentTime);
 
     for(var i=0; i<2; i++) {
-        universe.update(0.005);
+        universe.update(0.001);
         if(universe.is_unstable()) {
             isStable = false;
             document.getElementById('stability').innerText = 'Unstable';

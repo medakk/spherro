@@ -20,10 +20,10 @@ export default class Renderer {
         this.gl = canvas.getContext('webgl');
         this.fetcher = Fetcher.new();
 
-        this.init(this.gl, particleCount);
+        this.init(this.gl, particleCount, this.fetcher.stride());
     }
 
-    init(gl, particleCount) {
+    init(gl, particleCount, stride) {
         twgl.addExtensionsToContext(gl);
 
         if (!gl.drawArraysInstanced || !gl.createVertexArray) {
@@ -34,14 +34,14 @@ export default class Renderer {
         gl.enable(gl.BLEND);
         // gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA,
         //                      gl.ONE, gl.ONE_MINUS_SRC_ALPHA); // Stock blending function
-        gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE,
+        gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA,
                              gl.ONE, gl.ONE);
         gl.clearColor(0,0,0,0);
 
         const programInfo = twgl.createProgramInfo(gl, [VERTEX_SHADER, FRAGMENT_SHADER]);
         const buffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, particleCount*4*4, gl.DYNAMIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, particleCount*stride*4, gl.DYNAMIC_DRAW);
 
         const quad = {
             position: [-0.5, -0.5, 0,
@@ -56,15 +56,22 @@ export default class Renderer {
             instancePosition: {
                 numComponents: 2,
                 buffer: buffer,
-                stride: 16,
+                stride: 28,
                 offset: 0,
                 divisor: 1,
             },
             instanceVelocity: {
                 numComponents: 2,
                 buffer: buffer,
-                stride: 16,
+                stride: 28,
                 offset: 8,
+                divisor: 1,
+            },
+            instanceColor: {
+                numComponents: 3,
+                buffer: buffer,
+                stride: 28,
+                offset: 16,
                 divisor: 1,
             },
         };

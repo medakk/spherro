@@ -3,7 +3,8 @@ use crate::universe::Universe;
 
 // 2 floats for position
 // 2 floats for velocity
-const STRIDE: usize = 4;
+// 3 float for color
+const STRIDE: usize = 7;
 
 // Fetches data from the universe into a buffer
 // for wasm to read. The point of this is to separate
@@ -30,6 +31,9 @@ impl Fetcher {
             self.buffer[i*STRIDE + 1] = pi.pos.y;
             self.buffer[i*STRIDE + 2] = pi.vel.x;
             self.buffer[i*STRIDE + 3] = pi.vel.y;
+            self.buffer[i*STRIDE + 4] = pi.col.x;
+            self.buffer[i*STRIDE + 5] = pi.col.y;
+            self.buffer[i*STRIDE + 6] = pi.col.z;
         }
 
         self.buffer.as_ptr()

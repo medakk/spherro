@@ -5,6 +5,7 @@ uniform vec4 u_color;
 
 varying vec2 v_uv;
 varying vec2 v_vel;
+varying vec3 v_color;
 
 void main() {
     vec2 shifted_uv = v_uv - vec2(0.5, 0.5);
@@ -18,7 +19,9 @@ void main() {
     }
 
     float t = sqrt(dist2) / 0.5;
-    vec4 c1 = vec4(0.1, 0.56, 0.7, 1.0);
-    vec4 c2 = vec4(0.1, 0.56, 0.7, 0.0);
+    // vec4 c1 = vec4(0.1, 0.56, 0.7, 1.0);
+    // vec4 c2 = vec4(0.1, 0.56, 0.7, 0.0);
+    vec4 c1 = vec4(v_color, 1.0);
+    vec4 c2 = vec4(v_color, 0.0);
     gl_FragColor = mix(c1, c2, t);
 }
