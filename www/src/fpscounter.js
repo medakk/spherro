@@ -1,7 +1,7 @@
 export default class FPSCounter {
     constructor(sampleCount) {
         this.sampleCount = sampleCount;
-        this.timestamps = Array(0.0).fill(sampleCount);
+        this.timestamps = [];
         this.currIdx = 0;
         this.lastTime = 0.0;
     }
@@ -11,7 +11,11 @@ export default class FPSCounter {
         this.lastTime = currTime
 
         this.currIdx = (this.currIdx + 1) % this.sampleCount;
-        this.timestamps[this.currIdx] = dt;
+        if(this.timestamps.length < this.sampleCount) {
+            this.timestamps.push(dt);
+        } else {
+            this.timestamps[this.currIdx] = dt;
+        }
     }
 
     FPS() {
@@ -23,6 +27,6 @@ export default class FPSCounter {
     }
 
     smoothFPS() {
-        return this.sampleCount / this.timestamps.reduce((dt1, dt2) => (dt1 + dt2));
+        return this.timestamps.length / this.timestamps.reduce((dt1, dt2) => (dt1 + dt2));
     }
 }

@@ -9,7 +9,7 @@ const HEIGHT = 700;
 const strategy = Strategy.DAMBREAK;
 var universe = Universe.new(WIDTH, HEIGHT, strategy);
 const canvas = document.getElementById('spherro-canvas');
-const fpsCounter = new FPSCounter(10);
+const fpsCounter = new FPSCounter(20);
 const renderer = new Renderer(canvas, WIDTH, HEIGHT, universe.get_size());
 
 var shouldReset = false;
@@ -17,6 +17,7 @@ var mouseX = 0;
 var mouseY = 0;
 var isMousedown = false;
 var isStable = true;
+var nFrames = 0;
 
 const renderLoop = (currentTime) => {
     fpsCounter.register(currentTime);
@@ -45,9 +46,12 @@ const renderLoop = (currentTime) => {
         universe.add_force(force);
     }
 
-    const fps = fpsCounter.smoothFPS();
-    document.getElementById('fps').innerText = fps.toFixed(2) + ' FPS';
+    if(nFrames % 20 == 0) {
+        const fps = fpsCounter.smoothFPS();
+        document.getElementById('fps').innerText = fps.toFixed(1) + ' FPS';
+    }
 
+    nFrames += 1;
     requestAnimationFrame(renderLoop);
 };
 requestAnimationFrame(renderLoop);
