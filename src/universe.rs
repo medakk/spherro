@@ -14,8 +14,8 @@ const REST_RHO: f32 = MASS / (100.0 * 100.0);
 
 // This is hack to kill extremely large interaction forces
 // that cause the simulation to explode. We cap the force 
-// to this value.
-const MAX_FORCE_MAG: f32 = 90000.0;
+// to this value. Note that this is scaled by dt
+const MAX_FORCE_MAG: f32 = 450.0;
 
 // Boundary parameters
 const BOUNDARY_COR: f32 = 0.5; // Coefficient of restitution
@@ -61,7 +61,7 @@ impl Universe {
         self.update_particle_fields(&neighbours);
         self.update_nonpressure_forces(&neighbours, &force_neighbours, dt);
 
-        for _ in 0..3 { //TODO: this condition should take density error
+        for _ in 0..4 { //TODO: this condition should take density error
             self.update_particle_fields(&neighbours);
             self.update_pressure_forces(&neighbours, dt);
         }
@@ -125,8 +125,7 @@ impl Universe {
 
                 let dir = (pj.pos - force.pos()).normalize();
                 let dist2 = (pj.pos - force.pos()).magnitude2();
-
-                let mag = (force.power / dist2).min(MAX_FORCE_MAG);
+                let mag = (force.power / dist2).min(MAX_FORCE_MAG / dt);
                 let vel = dir * mag;
 
                 force_dv[*j] += vel;

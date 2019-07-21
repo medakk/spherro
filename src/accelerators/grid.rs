@@ -53,10 +53,10 @@ impl<'a, T> Grid<'a, T> where T: HasPosition {
         let y0 = clamp_f32(pos.y - r, 0.0, self.height as f32 - 1e-2);
         let y1 = clamp_f32(pos.y + r, 0.0, self.height as f32 - 1e-2);
 
-        let x0 = (x0 / self.bin_size).floor() as usize;
-        let x1 = (x1 / self.bin_size).floor() as usize;
-        let y0 = (y0 / self.bin_size).floor() as usize;
-        let y1 = (y1 / self.bin_size).floor() as usize;
+        let x0 = (x0 / self.bin_size) as usize;
+        let x1 = (x1 / self.bin_size) as usize;
+        let y0 = (y0 / self.bin_size) as usize;
+        let y1 = (y1 / self.bin_size) as usize;
 
         for x in x0..x1+1 {
             for y in y0..y1+1 {
@@ -95,8 +95,8 @@ impl<'a, T> Grid<'a, T> where T: HasPosition {
 
             let x = clamp_f32(pos.x, 0.0, width-1e-2);
             let y = clamp_f32(pos.y, 0.0, height-1e-2);
-            let x = (x / bin_size).floor() as usize;
-            let y = (y / bin_size).floor() as usize;
+            let x = (x / bin_size) as usize;
+            let y = (y / bin_size) as usize;
 
             let idx = y * cols + x;
             cells[idx].items.push(i);

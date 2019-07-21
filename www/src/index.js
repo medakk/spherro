@@ -58,6 +58,8 @@ document.addEventListener('keypress', function(e) {
     }
 })
 
+// TODO: This code doesn't work on resizing the window. assumes 1:1 correspondence with
+// simulation or something
 function getCursorPosition(canvas, event) {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
