@@ -42,7 +42,7 @@ const renderLoop = (currentTime) => {
 
     universe.clear_forces();
     if(isMousedown) {
-        const force = Force.new(mouseX, mouseY, 2e8, 100.0);
+        const force = Force.new(mouseX*WIDTH, mouseY*HEIGHT, 2e8, 100.0);
         universe.add_force(force);
     }
 
@@ -62,12 +62,10 @@ document.addEventListener('keypress', function(e) {
     }
 })
 
-// TODO: This code doesn't work on resizing the window. assumes 1:1 correspondence with
-// simulation or something
 function getCursorPosition(canvas, event) {
     const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = rect.height - (event.clientY - rect.top);
+    const x = (event.clientX - rect.left) / rect.width;
+    const y = (rect.height - (event.clientY - rect.top)) / rect.height;
     return {x, y};
 }
 
