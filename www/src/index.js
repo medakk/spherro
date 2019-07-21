@@ -87,12 +87,14 @@ document.addEventListener('mouseup', function(e) {
 })
 
 canvas.addEventListener('touchmove', function(e) {
+    e.preventDefault();
     const pos = getCursorPosition(canvas, e.changedTouches[0]);
     mouseX = pos.x;
     mouseY = pos.y;
 })
 
 document.addEventListener('touchstart', function(e) {
+    e.preventDefault();
     const pos = getCursorPosition(canvas, e.changedTouches[0]);
     mouseX = pos.x;
     mouseY = pos.y;
@@ -100,5 +102,6 @@ document.addEventListener('touchstart', function(e) {
 })
 
 document.addEventListener('touchend', function(e) {
+    e.preventDefault();
     isMousedown = false;
 })

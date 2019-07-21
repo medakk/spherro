@@ -17,6 +17,6 @@ module.exports = {
             test: /\.glsl$/i,
             use: 'raw-loader',
           },
-        ],
+    ],
   }
 };
