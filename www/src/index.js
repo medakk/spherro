@@ -1,4 +1,4 @@
-import { Universe, Strategy, Force } from "spherro";
+import { Universe, Force, Config } from "spherro";
 
 import Renderer from "./renderer";
 import FPSCounter from "./fpscounter"
@@ -6,8 +6,9 @@ import FPSCounter from "./fpscounter"
 const WIDTH = 700;
 const HEIGHT = 700;
 
-const strategy = Strategy.DAMBREAK;
-var universe = Universe.new(WIDTH, HEIGHT, strategy);
+const config = Config.new(0.4, 0.8, 50, 10);
+var universe = Universe.new(WIDTH, HEIGHT, config);
+
 const canvas = document.getElementById('spherro-canvas');
 const fpsCounter = new FPSCounter(20);
 const renderer = new Renderer(canvas, WIDTH, HEIGHT, universe.get_size());
@@ -33,7 +34,7 @@ const renderLoop = (currentTime) => {
     }
 
     if(shouldReset) {
-        universe = Universe.new(WIDTH, HEIGHT, strategy);
+        universe = Universe.new(WIDTH, HEIGHT, config);
         isStable = true;
         document.getElementById('stability').innerText = 'Stable';
         document.getElementById('stability').style.color = 'green';

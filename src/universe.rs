@@ -38,12 +38,12 @@ type Neighbours = Vec<Vec<usize>>;
 #[wasm_bindgen]
 #[allow(non_snake_case)]
 impl Universe {
-    pub fn new(width: f32, height: f32, strategy: initializer::Strategy) -> Universe {
+    pub fn new(width: f32, height: f32, config: &initializer::Config) -> Universe {
         if cfg!(target_arch="wasm32") {
             set_panic_hook();
         }
 
-        let particles = initializer::initialize(strategy, width, height, MASS);
+        let particles = initializer::initialize(config, width, height, MASS);
 
         Universe {
             particles: particles,

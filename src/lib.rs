@@ -1,13 +1,8 @@
 #[macro_use]
-#[allow(unused_macros)]
-#[allow(dead_code)]
-
 extern crate itertools;
-
 #[macro_use]
 pub mod util; //TODO: make this private
 
-#[allow(dead_code)]
 mod accelerators;
 mod particle;
 mod universe;
@@ -21,6 +16,7 @@ pub use particle::Particle;
 pub use universe::Universe;
 pub use fetcher::Fetcher;
 pub use force::Force;
+pub use initializer::Config;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
