@@ -24,7 +24,7 @@ const renderLoop = (currentTime) => {
     renderer.draw(universe, currentTime);
 
     for(var i=0; i<2; i++) {
-        universe.update(0.010);
+        universe.update(0.005);
         if(universe.is_unstable()) {
             isStable = false;
             document.getElementById('stability').innerText = 'Unstable';
