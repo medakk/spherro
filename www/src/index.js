@@ -58,8 +58,12 @@ const renderLoop = (currentTime) => {
 requestAnimationFrame(renderLoop);
 
 document.addEventListener('keypress', function(e) {
-    if(e.key == 'r') {
+    if(e.key === 'r') {
         shouldReset = true;
+    } else if (e.key === 'p') {
+        universe.queue_spawn_particles(5, 25.0, HEIGHT - 25.0);
+    } else if (e.key === 'o') {
+        universe.queue_despawn_particles(5);
     }
 })
 

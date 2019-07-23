@@ -1,5 +1,6 @@
 use wasm_bindgen::prelude::*;
 use cgmath::{InnerSpace};
+use rand::Rng;
 use crate::util::*;
 use crate::particle::{Particle};
 use crate::accelerators::{Accelerator, Grid};
@@ -24,13 +25,18 @@ const BOUNDARY_MIN_DV: f32 = 500.0; // If particle is too slow, it is accelerate
 const GRAVITY: f32 = -10000.0;
 const K: f32 = 10.0;
 
+enum Event {
+    Spawn(usize, Vector2f),
+    Despawn(usize),
+}
+
 #[wasm_bindgen]
 pub struct Universe {
     particles: Vec<Particle>,
     width: f32,
     height: f32,
-
     forces: Vec<Force>,
+    events: Vec<Event>,
 }
 
 type Neighbours = Vec<Vec<usize>>;
@@ -50,6 +56,7 @@ impl Universe {
             width: width,
             height: height,
             forces: Vec::new(),
+            events: Vec::new(),
         }
     }
 
@@ -67,6 +74,8 @@ impl Universe {
         }
 
         self.update_boundary();
+
+        self.update_events();
     }
 
     pub fn get_size(&self) -> usize {
@@ -79,6 +88,15 @@ impl Universe {
 
     pub fn clear_forces(&mut self) {
         self.forces.clear();
+    }
+
+    pub fn queue_spawn_particles(&mut self, count: usize, x: f32, y: f32) {
+        let pos = Vector2f::new(x, y);
+        self.events.push(Event::Spawn(count, pos));
+    }
+
+    pub fn queue_despawn_particles(&mut self, count: usize) {
+        self.events.push(Event::Despawn(count));
     }
 
     pub fn is_unstable(&self) -> bool {
@@ -244,6 +262,59 @@ impl Universe {
         }
 
         vel
+    }
+
+    // Handles the particle spawning and despawning events
+    pub fn update_events(&mut self) {
+        let mut rng = rand::thread_rng();
+
+        for event in self.events.iter() {
+            match event {
+                Event::Spawn(count, pos) => {
+                    for _ in 0..*count {
+                        // If we cluster all the points at the exact same location,
+                        // the pressure force will become extremly high and destabilize the
+                        // simulation
+                        let x: f32 = pos.x + (rng.gen::<f32>() - 0.5) * (0.3 * H);
+                        let y: f32 = pos.y + (rng.gen::<f32>() - 0.5) * (0.3 * H);
+                        let pi = Particle{
+                            pos: Vector2f::new(x, y),
+                            vel: vec2f_zero(),
+                            col: Color::new(0.0, 0.0, 1.0),
+                            mass: MASS,
+                            rho: 0.0,
+                            pressure: 0.0,
+                        };
+                        self.particles.push(pi);
+                    }
+                },
+                Event::Despawn(count) => {
+                    // We remove the particles which have the highest velocity
+                    // This is a heuristic to prevent destabilization
+                    assert!(*count <= self.particles.len());
+
+                    let mut s: Vec<(f32, usize)> = self.particles
+                                                  .iter()
+                                                  .enumerate()
+                                                  .map(|(idx, pi)| (pi.vel.magnitude2(), idx))
+                                                  .collect();
+
+                    // TODO: Use a faster sort algorithm, we only need top-k
+                    s.sort_unstable_by(|a, b| b.partial_cmp(a).unwrap());
+                    let order: Vec<_> = s.iter().map(|t| t.1).collect();
+                    let top_k = &order[order.len()-count-1 .. order.len()];
+
+                    self.particles = self.particles
+                                    .clone() //TODO: Avoid this clone
+                                    .into_iter()
+                                    .enumerate()
+                                    .filter(|(idx, _)| !top_k.contains(idx))
+                                    .map(|t| t.1)
+                                    .collect();
+                }
+            }
+        }
+        self.events.clear();
     }
 }
 

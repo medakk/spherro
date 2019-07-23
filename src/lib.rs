@@ -3,6 +3,8 @@ extern crate itertools;
 #[macro_use]
 pub mod util; //TODO: make this private
 
+extern crate rand;
+
 mod accelerators;
 mod particle;
 mod universe;

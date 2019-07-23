@@ -14,6 +14,7 @@ use spherro::{Universe, Force, Config};
 
 const VIZ_SCALE: f32 = 0.001;
 
+// This entire file is hacky. Just enough to debug the particle system
 fn main() {
     let mut window = Window::new("spherro");
     window.set_background_color(0.85, 0.85, 0.85);
@@ -89,6 +90,12 @@ fn main() {
                     let force = Force::new(350.0, 100.0, 2e8, 100.0);
                     universe.add_force(force);
                 },
+                WindowEvent::Key(Key::P, Action::Press, _) => {
+                    universe.queue_spawn_particles(5, 25.0, 700.0 - 25.0);
+                },
+                WindowEvent::Key(Key::O, Action::Press, _) => {
+                    universe.queue_despawn_particles(5);
+                },
                 WindowEvent::Key(Key::W, Action::Press, _) => {
                     force_y += MOVE_SPEED * dt;
                 },
@@ -133,6 +140,27 @@ fn main() {
             }
         }
 
+        // Update drawing particles
+        let n_uni = universe.get_size();
+        let n_viz = viz_objs.len();
+        if n_viz < n_uni { // Need more particles
+            let diff = n_uni - n_viz;
+            for _ in 0..diff {
+                let r = 10.0 * VIZ_SCALE;
+                let mut obj = window.add_sphere(r);
+                obj.set_color(0.0, 0.0, 0.0);
+                viz_objs.push(obj);
+            }
+        }
+        if n_viz > n_uni { // Need fewer particles
+            let diff = n_viz - n_uni;
+            for _ in 0..diff {
+                let mut obj = viz_objs.pop().unwrap();
+                window.remove_node(&mut obj);
+            }
+        }
+
+
         // Draw axes
         window.draw_line(
             &Point3::origin(),
@@ -153,6 +181,8 @@ fn main() {
         // Draw FPS
         let fps_s = format!("FPS: {}", (1.0 / dt));
         window.draw_text(&fps_s, &Point2::new(50.0, 50.0), 40.0, &font, &Point3::new(1.0, 0.0, 0.0));
+        let n_particle_s = format!("Particles: {}", universe.get_size());
+        window.draw_text(&n_particle_s, &Point2::new(50.0, 80.0), 40.0, &font, &Point3::new(1.0, 0.0, 0.0));
 
     }
 }

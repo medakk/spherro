@@ -22,7 +22,6 @@ impl Config {
     }
 }
 
-
 // Creates particles arranged in rows and columns delimited by the fractions
 // of width and height provided by the config. Cleaner ways of implementing
 // this are difficult because wasm_bindgen doesn't support traits and non-C style

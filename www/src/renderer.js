@@ -89,6 +89,13 @@ export default class Renderer {
         const gl = this.gl;
         const size = universe.get_size();
         const stride = this.fetcher.stride();
+
+        if(size !== this.particleCount) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.glInfo.buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, size*stride*4, gl.DYNAMIC_DRAW);
+            this.particleCount = size;
+        }
+
         const particlesPtr = this.fetcher.fetch(universe);
         const particleBuf = new Float32Array(memory.buffer, particlesPtr, size * stride);
 
