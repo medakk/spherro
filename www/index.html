@@ -25,16 +25,12 @@
         background-color: white;
       }
 
-      #fps {
-        font-size: 20px;
-        font-family: monospace;
-      }
-
-      #stability {
+      .debug-info {
         font-size: 14px;
-        color: green;
+        color: black;
         font-weight: bold;
         font-family: monospace;
+        text-align: right;
       }
 
       p {
@@ -45,12 +41,11 @@
   </head>
   <body>
     <div id="main">
+      <div class="debug-info">
+        <span id="fps">FPS</span>[<span id="stability">Stable</span>]
+      </div>
       <canvas id="spherro-canvas"></canvas>
-      <p id="fps">FPS</p>
-      <p id="stability">Stable</p>
     </div>
-
-    <br>
 
     <script src="./bootstrap.js"></script>
   </body>
