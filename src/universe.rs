@@ -10,7 +10,7 @@ use crate::force::Force;
 const MASS: f32 = 100.0;
 const H: f32 = 35.0;
 const VISC: f32 = 0.5;
-const REST_RHO: f32 = MASS / (100.0 * 100.0);
+const REST_RHO: f32 = MASS / (130.0 * 130.0);
 
 // This is hack to kill extremely large interaction forces
 // that cause the simulation to explode. We cap the force 
