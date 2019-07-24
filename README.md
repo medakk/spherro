@@ -1,6 +1,6 @@
 # spherro
 
-A smoothed particle hydrodynamics fluid simulator. Built with rust, and compiled to wasm.
+A smoothed particle hydrodynamics fluid simulator. Built with rust, and compiled to wasm. Check out the demo [here](https://apps.karthikkaranth.me/spherro/).
 
 ## Building
 
