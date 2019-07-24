@@ -9,7 +9,12 @@ module.exports = {
   },
   mode: "development",
   plugins: [
-    new CopyWebpackPlugin(['index.html'])
+    new CopyWebpackPlugin([
+      'index.html',
+      {
+        from: 'static'
+      }
+    ]),
   ],
   module: {
     rules: [
@@ -17,6 +22,15 @@ module.exports = {
             test: /\.glsl$/i,
             use: 'raw-loader',
           },
+          {
+            test:/\.css$/,
+            use:['style-loader','css-loader']
+          }
     ],
+  },
+  resolve: {
+    alias: {
+      'vue$': 'vue/dist/vue.esm.js' ,
+    }
   }
 };

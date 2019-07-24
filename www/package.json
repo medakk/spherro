@@ -28,11 +28,15 @@
   "homepage": "https://github.com/medakk/spherro",
   "dependencies": {
     "spherro": "file:../pkg",
-    "twgl.js": "^4.11.0"
+    "twgl.js": "^4.11.0",
+    "vue": "^2.6.10",
+    "vue-slider-component": "^3.0.33"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^5.0.0",
+    "css-loader": "^3.1.0",
     "raw-loader": "^3.0.0",
+    "style-loader": "^0.23.1",
     "webpack": "^4.29.3",
     "webpack-cli": "^3.1.0",
     "webpack-dev-server": "^3.1.5"

@@ -1,7 +1,16 @@
-import { Universe, Force, Config } from "spherro";
+import Vue from 'vue';
+import VueSlider from 'vue-slider-component'
+import 'vue-slider-component/theme/material.css'
 
+import { Universe, Force, Config } from "spherro";
 import Renderer from "./renderer";
 import FPSCounter from "./fpscounter"
+
+// Register Vue component
+Vue.component('VueSlider', VueSlider)
+
+// Disable the loading overlay
+document.querySelector('.loading').remove();
 
 const WIDTH = 700;
 const HEIGHT = 700;
@@ -13,11 +22,21 @@ const canvas = document.getElementById('spherro-canvas');
 const fpsCounter = new FPSCounter(20);
 const renderer = new Renderer(canvas, WIDTH, HEIGHT, universe.get_size());
 
+const app = new Vue({
+    el: '.controls',
+    data: {
+        fps: 60.0,
+        isStable: true,
+        desiredParticleCount: 500,
+        particleCount: 500,
+        isVueLoaded: true,
+    },
+});
+
 var shouldReset = false;
 var mouseX = 0;
 var mouseY = 0;
 var isMousedown = false;
-var isStable = true;
 var nFrames = 0;
 
 const renderLoop = (currentTime) => {
@@ -27,29 +46,37 @@ const renderLoop = (currentTime) => {
     for(var i=0; i<2; i++) {
         universe.update(0.005);
         if(universe.is_unstable()) {
-            isStable = false;
-            document.getElementById('stability').innerText = 'Unstable';
-            document.getElementById('stability').style.color = 'red';
+            app.isStable = false;
         }
     }
 
     if(shouldReset) {
         universe = Universe.new(WIDTH, HEIGHT, config);
-        isStable = true;
-        document.getElementById('stability').innerText = 'Stable';
-        document.getElementById('stability').style.color = 'green';
+        app.isStable = true;
         shouldReset = false;
     }
 
+    app.particleCount = universe.get_size();
+
+    // Update forces
     universe.clear_forces();
     if(isMousedown) {
         const force = Force.new(mouseX*WIDTH, mouseY*HEIGHT, 2e8, 100.0);
         universe.add_force(force);
     }
 
-    if(nFrames % 20 == 0) {
+    // Add events
+    console.assert(app.desiredParticleCount % 5 === 0);
+    const logicalSize = universe.get_size() + universe.get_queue_diff();
+    if(app.desiredParticleCount > logicalSize) {
+        universe.queue_spawn_particles(5, 25.0, HEIGHT - 25.0);
+    } else if(app.desiredParticleCount < logicalSize) {
+        universe.queue_despawn_particles(1);
+    }
+
+    if(nFrames % 20 === 0) {
         const fps = fpsCounter.smoothFPS();
-        document.getElementById('fps').innerText = fps.toFixed(1) + ' FPS';
+        app.fps = fps.toFixed(1) + ' FPS';
     }
 
     nFrames += 1;
