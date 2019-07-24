@@ -30,7 +30,7 @@
                    v-bind:class="{ blinking: !isStable }">Reset</a></span>
 
         <vue-slider v-model="desiredParticleCount"
-                    :min=100 :max=1500 :interval=5></vue-slider>
+                    :min="minParticles" :max="maxParticles" :interval=5></vue-slider>
       </div>
 
       <canvas id="spherro-canvas"></canvas>

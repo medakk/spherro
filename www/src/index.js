@@ -31,6 +31,9 @@ const app = new Vue({
         particleCount: 500,
         isVueLoaded: true,
         shouldReset: false,
+
+        minParticles: 100,
+        maxParticles: 1500,
     },
 });
 
@@ -52,6 +55,8 @@ const renderLoop = (currentTime) => {
 
     if(app.shouldReset) {
         universe = Universe.new(WIDTH, HEIGHT, config);
+
+        app.desiredParticleCount = 500;
         app.isStable = true;
         app.shouldReset = false;
     }
@@ -88,9 +93,9 @@ document.addEventListener('keypress', function(e) {
     if(e.key === 'r') {
         app.shouldReset = true;
     } else if (e.key === 'p') {
-        app.desiredParticleCount = Math.min(1500, app.desiredParticleCount+5);
+        app.desiredParticleCount = Math.min(app.maxParticles, app.desiredParticleCount+5);
     } else if (e.key === 'o') {
-        app.desiredParticleCount = Math.max(100, app.desiredParticleCount-5);
+        app.desiredParticleCount = Math.max(app.minParticles, app.desiredParticleCount-5);
     }
 })
 
