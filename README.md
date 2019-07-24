@@ -3,6 +3,10 @@
 
 A smoothed particle hydrodynamics fluid simulator. Built with rust, and compiled to wasm. Check out the demo [here](https://apps.karthikkaranth.me/spherro/).
 
+<p align="center">
+   <a href="https://giant.gfycat.com/JovialBabyishBalloonfish.webm"><img src="https://thumbs.gfycat.com/JovialBabyishBalloonfish-small.gif" alt="gif"></a>
+</p>
+
 ## Building
 
 ### Dependencies
