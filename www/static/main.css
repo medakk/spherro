@@ -30,10 +30,10 @@
     position: absolute;
     width: 99vw;
     height: 99vh;
-    background-color: #3a3a3a;
+    background-color: #dedede;
     font-family: monospace;
     font-size: 28px;
-    color: #dedede;
+    color: #3a3a3a;
     display: flex;
     flex-direction: column;
     align-items: center;
