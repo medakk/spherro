@@ -33,6 +33,10 @@ Running `cargo run --bin spherro-bin --release` starts a [kiss3d](https://docs.r
 
 Running `cargo bench` starts a headless dambreak simulation with a fixed time step. This can be used to test performance changes.
 
+## References
+
+* [SPH Fluids in Computer Graphics](https://cg.informatik.uni-freiburg.de/publications/2014_EG_SPH_STAR.pdf), _EUROGRAPHICS 2014_
+
 ## License
 
 [MIT License](LICENSE)
