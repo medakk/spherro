@@ -1,0 +1,77 @@
+#main {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 99%;
+    height: 99%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#spherro-canvas {
+    border: 5px solid black;
+    max-width: 80%;
+    max-height: 80%;
+    height: auto;
+    width: auto;
+    background-color: white;
+}
+
+.controls {
+    min-width: 35vw;
+    font-size: 14px;
+    color: black;
+    font-weight: bold;
+    font-family: monospace;
+    text-align: right;
+}
+
+.loading {
+    position: absolute;
+    width: 99vw;
+    height: 99vh;
+    background-color: #3a3a3a;
+    font-family: monospace;
+    font-size: 28px;
+    color: #dedede;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.heading {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.footer {
+    font-family: sans-serif;
+    text-align: center;
+    color: #9a9a9a;
+    min-width: 30vw;
+    margin-top: 0.1em;
+}
+
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+    -webkit-touch-callout: none; /* Safari */
+       -khtml-user-select: none; /* Konqueror HTML */
+         -moz-user-select: none; /* Firefox */
+          -ms-user-select: none; /* Internet Explorer/Edge */
+              user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome and Opera */
+}
+
+a:link, a:visited {
+    color: #7a7a7a;
+}
+
+p {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}

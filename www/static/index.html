@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>spherro</title>
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+  </head>
+  <body>
+
+    <div class="loading">
+      <p>loading <strong>spherro</strong></p>
+      <img src="svg-loaders/ball-triangle.svg" />
+    </div>
+
+    <div id="main" class="noselect">
+
+      <div class="controls">
+        <span class="heading">spherro</span>
+
+        | <span>{{ fps }}</span>
+        <span v-if="isStable">[Stable]</span>
+        <span v-else style="color:red">[Unstable]</span>
+
+        | <span>{{ particleCount }} Particles</span>
+
+        <vue-slider v-model="desiredParticleCount"
+                    :min=100 :max=1500 :interval=5></vue-slider>
+      </div>
+
+      <canvas id="spherro-canvas"></canvas>
+
+      <div class="footer">
+        <hr>
+        <p>© 2019 <a href="https://karthikkaranth.me">Karthik Karanth</a>, MIT License</p>
+        <p>View on <a href="https://github.com/medakk/spherro">GitHub</a></p>
+      </div>
+    </div>
+
+    <script src="./bootstrap.js"></script>
+  </body>
+</html>
