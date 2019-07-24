@@ -19,18 +19,26 @@
 
       <div class="controls">
         <span class="heading">spherro</span>
+        
+        <div>
+          <span>{{ fps }}fps</span>
+          <span v-if="isStable">[stable]</span>
+          <span v-else style="color:red">[unstable]</span>
 
-        | <span>{{ fps }}</span>
-        <span v-if="isStable">[Stable]</span>
-        <span v-else style="color:red">[Unstable]</span>
+          | <span>{{ particleCount }} particles</span>
+          | <span><a href="#"
+                    v-on:click="shouldReset = true"
+                    v-bind:class="{ blinking: !isStable }">reset</a></span>
+        </div>
 
-        | <span>{{ particleCount }} Particles</span>
-        | <span><a href="#"
-                   v-on:click="shouldReset = true"
-                   v-bind:class="{ blinking: !isStable }">Reset</a></span>
-
-        <vue-slider v-model="desiredParticleCount"
-                    :min="minParticles" :max="maxParticles" :interval=5></vue-slider>
+        <div>
+          <!-- Baba is You -->
+          <p class="help">slider is add and remove<br>click and touch is push</p>
+          <vue-slider
+                      v-model="desiredParticleCount"
+                      :min="minParticles" :max="maxParticles" :interval=5>
+          </vue-slider>
+        </div>
       </div>
 
       <canvas id="spherro-canvas"></canvas>

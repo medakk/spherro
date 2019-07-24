@@ -13,9 +13,7 @@
 #spherro-canvas {
     border: 5px solid black;
     max-width: 80%;
-    max-height: 80%;
-    height: auto;
-    width: auto;
+    max-height: 70vh;
     background-color: white;
 }
 
@@ -65,6 +63,12 @@
           -ms-user-select: none; /* Internet Explorer/Edge */
               user-select: none; /* Non-prefixed version, currently
                                     supported by Chrome and Opera */
+}
+
+.help {
+    float: right;
+    margin-top: 10px;
+    color: blueviolet;
 }
 
 .blinking{

@@ -81,7 +81,7 @@ const renderLoop = (currentTime) => {
 
     if(nFrames % 20 === 0) {
         const fps = fpsCounter.smoothFPS();
-        app.fps = fps.toFixed(1) + ' FPS';
+        app.fps = fps.toFixed(1);
     }
 
     nFrames += 1;
