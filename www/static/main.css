@@ -67,6 +67,17 @@
                                     supported by Chrome and Opera */
 }
 
+.blinking{
+    animation:blinkingText 0.8s infinite;
+}
+@keyframes blinkingText{
+    0%{     color: red;      }
+    49%{    color: red;      }
+    50%{    color: red;      }
+    99%{    color: black;    }
+    100%{   color: black;    }
+}
+
 a:link, a:visited {
     color: #7a7a7a;
 }

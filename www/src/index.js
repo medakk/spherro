@@ -30,10 +30,10 @@ const app = new Vue({
         desiredParticleCount: 500,
         particleCount: 500,
         isVueLoaded: true,
+        shouldReset: false,
     },
 });
 
-var shouldReset = false;
 var mouseX = 0;
 var mouseY = 0;
 var isMousedown = false;
@@ -50,10 +50,10 @@ const renderLoop = (currentTime) => {
         }
     }
 
-    if(shouldReset) {
+    if(app.shouldReset) {
         universe = Universe.new(WIDTH, HEIGHT, config);
         app.isStable = true;
-        shouldReset = false;
+        app.shouldReset = false;
     }
 
     app.particleCount = universe.get_size();
@@ -86,11 +86,11 @@ requestAnimationFrame(renderLoop);
 
 document.addEventListener('keypress', function(e) {
     if(e.key === 'r') {
-        shouldReset = true;
+        app.shouldReset = true;
     } else if (e.key === 'p') {
-        universe.queue_spawn_particles(5, 25.0, HEIGHT - 25.0);
+        app.desiredParticleCount = Math.min(1500, app.desiredParticleCount+5);
     } else if (e.key === 'o') {
-        universe.queue_despawn_particles(5);
+        app.desiredParticleCount = Math.max(100, app.desiredParticleCount-5);
     }
 })
 

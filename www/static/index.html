@@ -25,6 +25,9 @@
         <span v-else style="color:red">[Unstable]</span>
 
         | <span>{{ particleCount }} Particles</span>
+        | <span><a href="#"
+                   v-on:click="shouldReset = true"
+                   v-bind:class="{ blinking: !isStable }">Reset</a></span>
 
         <vue-slider v-model="desiredParticleCount"
                     :min=100 :max=1500 :interval=5></vue-slider>
