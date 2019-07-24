@@ -79,8 +79,23 @@ impl Universe {
         self.update_events();
     }
 
+    // Returns number of particles currently in the sim
     pub fn get_size(&self) -> usize {
         self.particles.len()
+    }
+
+    // Returns number of particles that would be added/removed if everything
+    // in the queue is popped
+    pub fn get_queue_diff(&self) -> isize {
+        let mut diff: isize = 0;
+        for event in self.events.iter() {
+            diff += match event {
+                Event::Spawn(count, _) =>   *count as isize,
+                Event::Despawn(count)  => -(*count as isize),
+            };
+        }
+
+        diff
     }
 
     pub fn add_force(&mut self, force: Force) {
