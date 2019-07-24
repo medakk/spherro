@@ -22,8 +22,8 @@
         
         <div>
           <span>{{ fps }}fps</span>
-          <span v-if="isStable">[stable]</span>
-          <span v-else style="color:red">[unstable]</span>
+          | <span v-if="isStable">stable</span>
+          <span v-else style="color:red">unstable</span>
 
           | <span>{{ particleCount }} particles</span>
           | <span><a href="#"
