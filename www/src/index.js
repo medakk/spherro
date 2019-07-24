@@ -130,7 +130,7 @@ canvas.addEventListener('touchmove', function(e) {
     mouseY = pos.y;
 })
 
-document.addEventListener('touchstart', function(e) {
+canvas.addEventListener('touchstart', function(e) {
     e.preventDefault();
     const pos = getCursorPosition(canvas, e.changedTouches[0]);
     mouseX = pos.x;
@@ -138,7 +138,7 @@ document.addEventListener('touchstart', function(e) {
     isMousedown = true;
 })
 
-document.addEventListener('touchend', function(e) {
+canvas.addEventListener('touchend', function(e) {
     e.preventDefault();
     isMousedown = false;
 })
