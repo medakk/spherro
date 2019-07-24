@@ -71,7 +71,7 @@ const renderLoop = (currentTime) => {
     if(app.desiredParticleCount > logicalSize) {
         universe.queue_spawn_particles(5, 25.0, HEIGHT - 25.0);
     } else if(app.desiredParticleCount < logicalSize) {
-        universe.queue_despawn_particles(1);
+        universe.queue_despawn_particles(2);
     }
 
     if(nFrames % 20 === 0) {
