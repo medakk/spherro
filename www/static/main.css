@@ -12,9 +12,20 @@
 
 #spherro-canvas {
     border: 5px solid black;
-    max-width: 80%;
-    max-height: 70vh;
     background-color: white;
+}
+/* TODO: I don't think it has to be this complicated */
+@media (orientation: landscape) {
+    #spherro-canvas {
+        width: 70vh;
+        height: 70vh;
+    }
+}
+@media (orientation: portrait) {
+    #spherro-canvas {
+        width: 70vw;
+        height: 70vw;
+    }
 }
 
 .controls {
