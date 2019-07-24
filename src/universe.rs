@@ -136,7 +136,7 @@ impl Universe {
                 let pj = &self.particles[j];
                 let x_ij = pi.pos - pj.pos;
                 let q = x_ij.magnitude() / H;
-                let Wj = cubicspline_f(q) / H.powi(3);
+                let Wj = cubicspline_f(q) / H.powi(3); //TODO: Should be powi(2), but that explodes
                 pj.mass * Wj
             }).sum();
 
@@ -185,7 +185,7 @@ impl Universe {
                 let df = cubicspline_df(q);
 
                 let dq = (pi.pos - pj.pos) / (H * q); // gradient of q
-                let dW = (1.0 / H.powi(3)) * df * dq;
+                let dW = (1.0 / H.powi(3)) * df * dq; //TODO: Should be powi(2), but that explodes
 
                 dW
             }).collect();
@@ -222,7 +222,7 @@ impl Universe {
                 let df = cubicspline_df(q);
 
                 let dq = (pi.pos - pj.pos) / (H * q); // gradient of q
-                let dW = (1.0 / H.powi(3)) * df * dq;
+                let dW = (1.0 / H.powi(3)) * df * dq; //TODO: Should be powi(2), but that explodes
 
                 dW
             }).collect();
