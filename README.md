@@ -1,4 +1,5 @@
 # spherro
+[![Crates.io](https://img.shields.io/crates/v/spherro.svg)](https://crates.io/crates/spherro)
 
 A smoothed particle hydrodynamics fluid simulator. Built with rust, and compiled to wasm. Check out the demo [here](https://apps.karthikkaranth.me/spherro/).
 
