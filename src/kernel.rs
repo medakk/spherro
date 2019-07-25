@@ -1,7 +1,3 @@
-// TODO: The formula here is the same as in the SPH Fluids in Computer Graphics
-// paper, but according to 
-// there are different constant factors depending on the dimensionality
-
 use std::f32::consts::PI;
 
 // https://pysph.readthedocs.io/en/latest/reference/kernels.html
