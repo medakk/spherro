@@ -35,6 +35,14 @@ const app = new Vue({
         minParticles: 100,
         maxParticles: 1500,
     },
+    methods: {
+        onclickReset(event) {
+            this.shouldReset = true;
+            if(!this.isStable) {
+                location.reload();
+            }
+        }
+    }
 });
 
 var mouseX = 0;

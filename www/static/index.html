@@ -28,7 +28,7 @@
 
           | <span>{{ particleCount }} particles</span>
           | <span><a href="#"
-                    v-on:click="shouldReset = true"
+                    v-on:click="onclickReset();"
                     v-bind:class="{ blinking: !isStable }">reset</a></span>
         </div>
 
