@@ -11,7 +11,7 @@ A smoothed particle hydrodynamics fluid simulator. Built with rust, and compiled
 
 ### Dependencies
 All instructions have been tested on Ubuntu 18.04, with the versions:
-* rust 1.35.0
+* rust 1.63.0
 * wasm-pack 0.8.1
 * npm 6.9.0
 * node v10.16.0
